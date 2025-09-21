@@ -12,7 +12,7 @@ export default defineConfig({
   ],
   define: {
         'process.env': {
-          "REACT_APP_GOOGLE_API":"AIzaSyDdy97kaTzH2HOakQn9H23HHwLcc1jpWPE"
+          "REACT_APP_GOOGLE_API":""
         }, // Or define specific process.env variables as needed
       },
 })
