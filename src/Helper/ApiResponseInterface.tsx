@@ -21,7 +21,7 @@ export interface Activity {
   cost: number;
   cost_per_person: number;
   booking_required: boolean;
-  booking_url?: string; // Optional as it might not always be present
+  booking_url?: string; 
   rating: number;
   review_count: number;
   tips: string[];
@@ -57,7 +57,7 @@ export interface Transport {
   cost: number;
   cost_per_person: number;
   description: string;
-  notes?: string[]; // Optional as it might not always be present
+  notes?: string[]; 
 }
 
 export interface Weather {

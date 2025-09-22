@@ -11,8 +11,6 @@ const itinerarySlice  =createSlice({
     initialState:initialState,
     reducers:{
         addTrip:(state,action)=>{
-
-            console.log(action.payload,"payload")
            
              Object.assign(state, action.payload);
         }

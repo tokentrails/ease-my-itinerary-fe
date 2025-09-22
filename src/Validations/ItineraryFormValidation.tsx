@@ -1,11 +1,9 @@
 import * as yup from "yup";
 const parseDateString = (dateString: string | undefined): Date | null => {
   if (!dateString) return null;
-  // Basic check to ensure the string has the correct structure before splitting
   if (!/^\d{2}\/\d{2}\/\d{4}$/.test(dateString)) return null;
 
   const [day, month, year] = dateString.split("/").map(Number);
-  // Month is 0-indexed in JavaScript Dates, so subtract 1
   return new Date(year, month - 1, day);
 };
 
@@ -51,11 +49,11 @@ export const validationSchema = yup.object({
       "is-after-start",
       "End date cannot be before the start date",
       function (value) {
-        // Use `this.parent` to access the other fields in the object
+
         const { start_date } = this.parent;
         const startDate = parseDateString(start_date);
         const endDate = parseDateString(value);
-        if (!startDate || !endDate) return true; // Let other rules handle format errors
+        if (!startDate || !endDate) return true; 
         return endDate >= startDate;
       }
     ),
@@ -64,8 +62,6 @@ export const validationSchema = yup.object({
     .of(yup.string().required())
     .min(1, "Please select at least one interests")
     .required("Themes are required"),
-
-  // --- Optional Field ---
   special_requests: yup
     .string()
     .max(500, "Special requests cannot exceed 500 characters"),

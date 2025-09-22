@@ -12,7 +12,6 @@ const ItineraryMain = () => {
   const tripAdded = useSelector(TripInfo);
   const [trip, setTrip] = useState<Trip | null>(null);
   useEffect(() => {
-    console.log(tripAdded.id, "tripAdded");
     if (tripAdded.id.length > 0) {
       setTrip(tripAdded);
     }

@@ -11,7 +11,6 @@ const userSlice = createSlice({
   reducers: {
     setUserInfo:(state,action)=>{
         state={...action.payload}
-        console.log(state)
     }
   },
 })

@@ -77,7 +77,7 @@ const ItineraryForm: React.FC = () => {
   const formik = useFormik({
     initialValues: initialValues,
     validationSchema: validationSchema,
-    onSubmit: async (values, _) => {
+    onSubmit: async (values) => {
       setLoading(true);
       const myHeaders = new Headers();
       myHeaders.append("Content-Type", "application/json");
@@ -98,8 +98,7 @@ const ItineraryForm: React.FC = () => {
         .then(async (resp) => {
           setLoading(false);
           const data = await resp.json();
-          console.log(data, "data");
-          console.log({ data: data?.data?.trip });
+ 
 
           if (data?.data?.trip) {
             window.scrollTo({
@@ -119,7 +118,7 @@ const ItineraryForm: React.FC = () => {
           setError("Please Try again later!");
           console.log(error);
         });
-      console.log(values, _, "ask");
+
     },
   });
   const interests = [
@@ -323,7 +322,6 @@ const ItineraryForm: React.FC = () => {
                     : moment().format("YYYY-MM-DD")
                 }
                 onUpdate={(value: string) => {
-                  console.log(value, "values");
                   formik.setFieldValue("end_date", value);
                 }}
                 errorMessage={

@@ -18,7 +18,6 @@ const getWeatherIcon = (condition:string) => {
     if (lowerCaseCondition.includes('cloud')) {
         return <CloudOutlinedIcon />;
     }
-    // Default icon
     return <WbSunnyOutlinedIcon />;
 };
 
