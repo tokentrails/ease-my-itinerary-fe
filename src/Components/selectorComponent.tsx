@@ -35,20 +35,23 @@ const InputSelect = (props: Props) => {
   return (
     <div className={`w-[${width}] h-[110px]`}>
       <div className="flex items-center space-x-2 my-2 justify-start">
-        <div className="text-cyan-500 mr-2">{Icon && Icon}</div>
+      
         <p
-          className="text-lg font-semibold text-gray-800"
+            className="text-lg  text-gray-800"
           style={titleStyle && titleStyle}
         >
           {title}
         </p>
         {isOptional && <p className="text-[12px]">(Optional)</p>}
       </div>
+      <div className="border rounded-xl flex items-center  focus:ring-cyan-400 pr-4">
+      <div className="  mx-2 ml-4">{Icon && Icon}</div>
       <select
         value={value}
         style={inputStyle && inputStyle}
         onChange={(e) => onUpdate(e.target.value)}
-        className={`w-full px-4 py-4 border rounded-sm text-gray-700 focus:outline-none focus:ring-2 focus:border-transparent transition-all `}
+
+        className={`w-full px-4 py-4 rounded-sm border-0 outline-none  border-none text-gray-700  transition-all `}
       >
         {options.map((value) => (
           <option key={value.key} value={value.key}>
@@ -56,6 +59,7 @@ const InputSelect = (props: Props) => {
           </option>
         ))}
       </select>
+      </div>
     </div>
   );
 };

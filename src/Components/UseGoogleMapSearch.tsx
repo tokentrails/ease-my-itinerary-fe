@@ -67,15 +67,17 @@ const PlaceAutocompleteInput: React.FC<PlaceAutocompleteInputProps> = ({
   return (
     <div className="w-full h-[110px]">
       <div className="flex items-center space-x-2 my-2 justify-start">
-        <div className="text-cyan-500 mr-2">{Icon && Icon}</div>
+    
         <p
-          className="text-lg font-semibold text-gray-800"
+          className="text-lg  text-gray-800"
           style={titleStyle && titleStyle}
         >
           {title}
         </p>
       </div>
-      <input
+      <div className="border rounded-xl flex items-center  focus:ring-cyan-400">
+            <div className="  mx-2 ml-4">{Icon && Icon}</div>
+            <input
         ref={inputRef}
         type="text"
         key={title}
@@ -84,10 +86,12 @@ const PlaceAutocompleteInput: React.FC<PlaceAutocompleteInputProps> = ({
           onPlaceSelect(e.target.value);
         }}
         placeholder="Search for a place..."
-        className={`w-full px-4 py-4 border border-gray-300 rounded-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition-all duration-200 ${
+        className={`w-full px-4 py-4  border-gray-300 rounded-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:border-transparent transition-all duration-200 ${
           errorMessage && "border-red-800"
         }`}
       />
+      </div>
+      
       {errorMessage ? <p className="text-red-800">{errorMessage}</p>:<p></p>}
     </div>
   );

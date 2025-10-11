@@ -1,14 +1,11 @@
-
 import { useEffect, useState } from "react";
-import ItineraryForm from "./itineraryForm";
+import ItineraryForm from "./itineraryFormNew";
 import type { Trip } from "../../Helper/ApiResponseInterface";
 import ItineraryInfo from "./itineraryInfo";
-import {  useSelector } from "react-redux";
-import {  TripInfo } from "../../Store/itinerary-slice";
-
+import { useSelector } from "react-redux";
+import { TripInfo } from "../../Store/itinerary-slice";
 
 const ItineraryMain = () => {
-
   const tripAdded = useSelector(TripInfo);
   const [trip, setTrip] = useState<Trip | null>(null);
   useEffect(() => {
@@ -16,7 +13,6 @@ const ItineraryMain = () => {
       setTrip(tripAdded);
     }
   }, [tripAdded]);
-
 
   return (
     <div>
