@@ -51,7 +51,7 @@ const DisplayCard = (props: Props) => {
           open ? "max-h-[40rem]" : "max-h-0"
         }`}>
         {data.length>0 && data.map((i,index)=>{
-            return <p className="px-3 text-sm text-gray-500 py-3 rounded-xl shadow-lg bg-white mt-2" key={index}>{i}</p>
+            return <p className="px-3 text-sm text-gray-500 py-2 rounded-xl mt-2" key={index}>{i}</p>
         })}
       </div>
     </div>

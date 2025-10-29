@@ -1,27 +1,42 @@
 import moment from "moment";
-import type { Trip } from "../../Helper/ApiResponseInterface";
-import DayCard from "./DayCard";
-import ItimeraryBreakDown from "./itineraryBreakDown";
-import ItineraryForm from "./itineraryForm";
-import DisplayCard from "./displayCard";
+
+
+
 import { Compass, Lightbulb, Star, Thermometer } from "lucide-react";
-import AccommodationCard from "./AccommodationCard";
-import Summary from "./Summary";
+
+
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import { TripInfo } from "../../Store/itinerary-slice";
+import { useNavigate, useParams } from "react-router-dom";
+import ChatBot from "../chatWithAi";
+import type { Trip } from "../../Helper/ApiResponseInterface";
+import Summary from "./Summary";
+import DayCard from "./DayCard";
+import AccommodationCard from "./components/AccommodationCard";
+import ItineraryBreakDown from "./itineraryBreakDown";
+import DisplayCard from "./displayCard";
 
-interface Props {
-  trip: Trip;
-}
+const ItineraryInfo = () => {
+  const trip = useSelector(TripInfo);
+   const navigate = useNavigate();
+  const {id} = useParams()
 
-const ItineraryInfo = (props: Props) => {
-  const { trip } = props;
+  useEffect(()=>{
+    if(id && !trip.id){
+      navigate("/Itinerary")
+    }
+  },[id, trip.id, navigate])
   const [activeTab, setActiveTab] = useState("1");
   return (
     <div className=" relative w-[100vw] py-5 px-8">
       <div>
-        {trip.day_plans.length > 0 ? (
+        
+        <ChatBot chats={[]} updateValues={function (value: Trip): void {
+          console.log(value)
+        } } />
           <div>
             <div
               className="grid justify-between"
@@ -146,7 +161,7 @@ const ItineraryInfo = (props: Props) => {
               </div>
               <div className="w-full  ">
                 <div className=" w-full">
-                  <ItimeraryBreakDown
+                  <ItineraryBreakDown
                     trip={trip}
                     breakDown={trip.budget_breakdown}
                   />
@@ -183,12 +198,7 @@ const ItineraryInfo = (props: Props) => {
               </div>
             </div>
           </div>
-        ) : (
-          <div>
-           
-            <ItineraryForm />
-          </div>
-        )}
+
       </div>
     </div>
   );

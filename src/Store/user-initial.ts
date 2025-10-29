@@ -2,6 +2,11 @@ import type { IUser } from "./user-type"
 
 export const UserInitial:IUser={
 email:"",
-name:"kooushik",
-password:""
+first_name:"",
+last_name:"",
+password:"",
+phone:"",
+access_token:"",
+id:"",
+refresh_token:""
 }

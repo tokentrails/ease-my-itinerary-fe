@@ -38,7 +38,7 @@ const DayCard = (props: Props) => {
               Day {dayInfo.day_number} : {dayInfo.title}
             </p>
             <p className="text-gray-500 text-sm">
-              {moment(dayInfo.date).format("MMMM DD, YYYYY")}
+              {moment(dayInfo.date).format("MMMM DD, YYYY")}
             </p>
           </div>
           <div className="text-cyan-500 pr-10 text-right">

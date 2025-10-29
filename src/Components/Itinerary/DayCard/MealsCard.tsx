@@ -42,10 +42,10 @@ const MealsCard = (props: Props) => {
             {meal.cost > 0 ? (
               <>
                 <div className="text-lg font-semibold text-gray-900">
-                  ₹{meal.cost}
+                  ₹{meal.cost.toFixed(2).toLocaleString()}
                 </div>
                 <div className="text-sm text-gray-500">
-                  ₹{meal.cost_per_person}/person
+                  ₹{meal.cost_per_person.toFixed(2).toLocaleString()}/person
                 </div>
               </>
             ) : (
@@ -57,10 +57,12 @@ const MealsCard = (props: Props) => {
         </div>
         <div className="space-y-3 mb-4">
           <div className="flex items-center gap-3">
-            <Clock className="w-4 h-4 text-cyan-500" />
+          {meal.reservation_time&& <div className="flex items-center gap-3" >
+             <Clock className="w-4 h-4 text-cyan-500" />
             <span className="font-medium text-gray-900">
               {moment(meal.reservation_time,"HH:mm").format("hh:mm a")}
             </span>
+           </div>}
             <div className="flex items-center gap-1">
               {meal.booking_required ? (
                 <>
@@ -96,7 +98,7 @@ const MealsCard = (props: Props) => {
         <div className="flex items-center gap-4 mb-4 p-3 bg-cyan-50 rounded-lg">
           <div className="flex items-center gap-1">
             <Star className="w-4 h-4 text-yellow-400 fill-current" />
-            <span className="font-medium text-gray-900">{meal.rating}</span>
+            <span className="font-medium text-gray-900">{meal.rating.toFixed(2)}</span>
             <span className="text-sm text-gray-500">
               ({meal.review_count.toLocaleString()} reviews)
             </span>

@@ -1,1 +1,10 @@
 @import "tailwindcss";
+
+.datePickerMain {
+    outline: none !important;
+
+}
+
+.min-text-16{
+font-size: calc(16px + 2vw);
+}

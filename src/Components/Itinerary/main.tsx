@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import ItineraryForm from "./itineraryFormNew";
+import ItineraryForm from "./itineraryForm";
 import type { Trip } from "../../Helper/ApiResponseInterface";
 import ItineraryInfo from "./itineraryInfo";
 import { useSelector } from "react-redux";
@@ -17,7 +17,7 @@ const ItineraryMain = () => {
   return (
     <div>
       {!trip && <ItineraryForm />}
-      {trip && <ItineraryInfo trip={trip} />}
+      {trip && <ItineraryInfo  />}
     </div>
   );
 };

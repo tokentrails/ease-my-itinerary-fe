@@ -16,9 +16,9 @@ const TransportCard = (props: Props) => {
         <p className="text-xl ml-2 font-medium py-3">{transport.mode}</p>
         {transport.cost && transport.cost != 0 ? (
           <div className="text-right">
-            <p className="font-medium text-lg">₹{transport.cost.toLocaleString()}</p>
+            <p className="font-medium text-lg">₹{transport.cost.toFixed(2).toLocaleString()}</p>
             <p className="text-sm text-gray-400">
-              ₹{transport.cost_per_person}/person
+              ₹{transport.cost_per_person.toFixed(2)}/person
             </p>
           </div>
         ) : (

@@ -1,27 +1,31 @@
-
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState } from "react";
-import { motion } from "motion/react";
-import MoneyIcon from "@mui/icons-material/Money";
-import InputComponent from "../../Components/inputComponent";
-
-import EmojiObjectsOutlinedIcon from "@mui/icons-material/EmojiObjectsOutlined";
-import PlaceAutocompleteInput from "../../Components/UseGoogleMapSearch";
-import InputSelect from "../../Components/selectorComponent";
 import { useFormik } from "formik";
-import ChatBubbleOutlineOutlinedIcon from "@mui/icons-material/ChatBubbleOutlineOutlined";
-import validationSchema from "../../Validations/ItineraryFormValidation";
-import DateComponent from "../../Components/dateComponent";
-import PeopleIcon from "@mui/icons-material/People";
-import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import moment from "moment";
-import FastfoodOutlinedIcon from "@mui/icons-material/FastfoodOutlined";
-import TextAreaComponent from "../../Components/textAreaComponent";
+import React, { useEffect, useState } from "react";
+
+import { motion } from "motion/react";
+import PlaceAutocompleteInput from "../../customComponents/UseGoogleMapSearch";
 import FlightLandIcon from "@mui/icons-material/FlightLand";
 import FlightTakeoffIcon from "@mui/icons-material/FlightTakeoff";
-import { useDispatch } from "react-redux";
+import DateComponent from "../../customComponents/dateComponent";
+import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
+import InputSelect from "../../customComponents/selectorComponent";
+import PeopleIcon from "@mui/icons-material/People";
+import InputComponent from "../../customComponents/inputComponent";
+import MoneyIcon from "@mui/icons-material/Money";
+import TempleBuddhistOutlinedIcon from "@mui/icons-material/TempleBuddhistOutlined";
+import AccountBalanceOutlinedIcon from "@mui/icons-material/AccountBalanceOutlined";
+import HikingOutlinedIcon from "@mui/icons-material/HikingOutlined";
+import FastfoodOutlinedIcon from "@mui/icons-material/FastfoodOutlined";
+import KitesurfingOutlinedIcon from "@mui/icons-material/KitesurfingOutlined";
+import PetsOutlinedIcon from "@mui/icons-material/PetsOutlined";
+import ColorLensOutlinedIcon from "@mui/icons-material/ColorLensOutlined";
+import ForestOutlinedIcon from "@mui/icons-material/ForestOutlined";
+import { useDispatch, useSelector } from "react-redux";
 import { addTrip } from "../../Store/itinerary-slice";
-
+import { useNavigate } from "react-router-dom";
+import { UsetInfo } from "../../Store/user-slice";
+import validationSchema from "./ItineraryFormValidation";
 interface TripFormValues {
   budget: string;
   days: string;
@@ -37,30 +41,11 @@ interface TripFormValues {
   accommodationType: string[];
   special_requests: string;
 }
-const mealType = [
-  {
-    type: "vegan",
-    label: "🍽️ vegan",
-    color: "cyan",
-  },
-  {
-    type: "vegetarian",
-    label: "🥗 Vegetarian",
-    color: "green",
-  },
-  {
-    type: "non-vegetarian",
-    label: "🍗 Non-Vegetarian ",
-    color: "red",
-  },
-];
 
 const ItineraryForm: React.FC = () => {
-  const dispatch = useDispatch();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const navigate = useNavigate();
   const initialValues: TripFormValues = {
-    budget: "1000",
+    budget: "",
     days: "",
     destination: "",
     interests: [],
@@ -74,6 +59,83 @@ const ItineraryForm: React.FC = () => {
     special_requests: "",
     accommodationType: ["hotel"],
   };
+  const interests = [
+    {
+      id: "heritage",
+      name: "Heritage",
+      icon: <AccountBalanceOutlinedIcon />,
+      desc: "Historical monuments & culture",
+    },
+    {
+      id: "spiritual",
+      name: "Spiritual",
+      icon: <TempleBuddhistOutlinedIcon />,
+      desc: "Temples & pilgrimage",
+    },
+    {
+      id: "adventure",
+      name: "Adventure",
+      icon: <HikingOutlinedIcon />,
+      desc: "Trekking & outdoor activities",
+    },
+    {
+      id: "beach",
+      name: "Beach",
+      icon: <KitesurfingOutlinedIcon />,
+      desc: "Beaches & hill stations",
+    },
+    {
+      id: "food",
+      name: "Food",
+      icon: <FastfoodOutlinedIcon />,
+      desc: "Local cuisine & street food",
+    },
+    {
+      id: "wildlife",
+      name: "Wildlife",
+      icon: <PetsOutlinedIcon />,
+      desc: "National parks & safaris",
+    },
+    {
+      id: "culture",
+      name: "Culture",
+      icon: <ColorLensOutlinedIcon />,
+      desc: "Art, music & festivals",
+    },
+    {
+      id: "nature",
+      name: "Nature",
+      icon: <ForestOutlinedIcon />,
+      desc: "Mountains & natural beauty",
+    },
+  ];
+  const mealType = [
+    {
+      type: "vegan",
+      label: "vegan",
+      color: "cyan",
+    },
+    {
+      type: "vegetarian",
+      label: "Vegetarian",
+      color: "green",
+    },
+    {
+      type: "non-vegetarian",
+      label: "Non-Vegetarian ",
+      color: "red",
+    },
+  ];
+  const dispatch = useDispatch();
+  const [loading, setLoading] = useState(false);
+  const navigator = useNavigate();
+  const userInfo = useSelector(UsetInfo);
+  const [error, setError] = useState("");
+  useEffect(() => {
+    if (userInfo.id.length == 0) {
+      navigator("/Login");
+    }
+  }, [userInfo]);
   const formik = useFormik({
     initialValues: initialValues,
     validationSchema: validationSchema,
@@ -98,7 +160,6 @@ const ItineraryForm: React.FC = () => {
         .then(async (resp) => {
           setLoading(false);
           const data = await resp.json();
- 
 
           if (data?.data?.trip) {
             window.scrollTo({
@@ -106,6 +167,7 @@ const ItineraryForm: React.FC = () => {
               left: 0,
               behavior: "smooth",
             });
+            navigate("/Itinerary/" + data.data.trip.id);
             dispatch(addTrip({ ...data.data.trip }));
           } else if (data.error.message) {
             setError(data.error.message || "No Data Found");
@@ -118,59 +180,8 @@ const ItineraryForm: React.FC = () => {
           setError("Please Try again later!");
           console.log(error);
         });
-
     },
   });
-  const interests = [
-    {
-      id: "heritage",
-      name: "Heritage",
-      icon: "🏛️",
-      desc: "Historical monuments & culture",
-    },
-    {
-      id: "spiritual",
-      name: "Spirituality",
-      icon: "🛕",
-      desc: "Temples & pilgrimage",
-    },
-    {
-      id: "adventure",
-      name: "Adventure",
-      icon: "⛰️",
-      desc: "Trekking & outdoor activities",
-    },
-    {
-      id: "beach",
-      name: "Beach",
-      icon: "🏖️",
-      desc: "Beaches & hill stations",
-    },
-    {
-      id: "food",
-      name: "Food",
-      icon: "🍛",
-      desc: "Local cuisine & street food",
-    },
-    {
-      id: "wildlife",
-      name: "Wildlife",
-      icon: "🐅",
-      desc: "National parks & safaris",
-    },
-    {
-      id: "culture",
-      name: "Culture",
-      icon: "🎭",
-      desc: "Art, music & festivals",
-    },
-    {
-      id: "nature",
-      name: "Nature",
-      icon: "🌿",
-      desc: "Mountains & natural beauty",
-    },
-  ];
   const handleThemeToggle = (interests: string) => {
     const currentThemes = formik.values.interests || [];
     let updatedThemes;
@@ -182,18 +193,6 @@ const ItineraryForm: React.FC = () => {
     formik.setFieldValue("interests", updatedThemes);
   };
 
-  const popularDestinations = {
-    domestic: [
-      "Goa",
-      "Kerala (Backwaters)",
-      "Rajasthan (Jaipur)",
-      "Himachal Pradesh (Manali)",
-      "Uttarakhand (Rishikesh)",
-      "Karnataka (Mysore)",
-      "Tamil Nadu (Ooty)",
-      "Kashmir (Srinagar)",
-    ],
-  };
   return (
     <motion.div
       initial={{
@@ -206,264 +205,206 @@ const ItineraryForm: React.FC = () => {
         duration: 0.5,
         ease: "easeInOut",
       }}
-      className="min-h-screen bg-gray-50"
+      className="min-h-screen bg-gray-50 flex justify-center p-5"
     >
-      <main className="max-w-5xl mx-auto px-4 py-5">
-        <div className="bg-white rounded-2xl shadow-lg p-8">
-          <h1 className="text-3xl font-bold text-gray-900 text-center mb-8">
-            Create your personalized itinerary
-          </h1>
-          {error && error.length > 0 && (
-            <p className="text-md text-center text-red-400 font-semibold">
-              {" "}
-              {error}
-            </p>
-          )}
+      <div className="sm:w-[90%] rounded-2xl p-2 lg:w-[70%] ">
+        <div>
+          <p className="font-semibold my-5 text-3xl text-center">
+            Plan your next adventure
+          </p>
+          <p className="text-center text-md">
+            Create a personalized itinerary{" "}
+          </p>
+        </div>
+
+        <div className="my-4 mt-20">
           <form
             onSubmit={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              console.log(formik.errors, "errors");
               formik.handleSubmit();
             }}
-            className="space-y-6"
+            className="flex justify-between flex-wrap"
           >
-            <div className="flex justify-between items-center">
-              <div className="mr-1 w-1/2">
-                <PlaceAutocompleteInput
-                  Icon={<FlightTakeoffIcon sx={{ fontSize: "24px" }} />}
-                  title={"Where are you traveling from?"}
-                  value={formik.values.source}
-                  errorMessage={
-                    formik.touched.source ? formik.errors.source : ""
-                  }
-                  onPlaceSelect={(value: string) => {
-                    formik.setFieldValue("source", value || "");
+            <div className="sm:w-full lg:w-[48%]">
+              <PlaceAutocompleteInput
+                Icon={<FlightTakeoffIcon sx={{ fontSize: "24px" }} />}
+                title={"Source"}
+                value={formik.values.source}
+                errorMessage={formik.touched.source ? formik.errors.source : ""}
+                onPlaceSelect={(value: string) => {
+                  formik.setFieldValue("source", value || "");
+                }}
+              />
+            </div>
+            <div className="sm:w-full lg:w-[48%]">
+              <PlaceAutocompleteInput
+                Icon={<FlightLandIcon sx={{ fontSize: "24px" }} />}
+                title={"Destination"}
+                value={formik.values.destination}
+                errorMessage={
+                  formik.touched.destination ? formik.errors.destination : ""
+                }
+                onPlaceSelect={(value: string) => {
+                  formik.setFieldValue("destination", value || "");
+                }}
+              />
+            </div>
+            <div className="flex w-full flex-wrap items-center justify-between">
+              <div className="sm:w-full lg:w-[48%] ">
+                <DateComponent
+                  Icon={<CalendarMonthIcon sx={{ fontSize: "24px" }} />}
+                  title={"From Date"}
+                  minDate={moment().format("YYYY-MM-DD")}
+                  onUpdate={(value: string) => {
+                    formik.setFieldValue("start_date", value);
                   }}
+                  errorMessage={
+                    formik.touched.start_date ? formik.errors.start_date : ""
+                  }
+                  value={formik.values.start_date}
                 />
               </div>
-              <div className="w-1/2">
-                <PlaceAutocompleteInput
-                  Icon={<FlightLandIcon sx={{ fontSize: "24px" }} />}
-                  title={"Where are you traveling to?"}
-                  value={formik.values.destination}
-                  errorMessage={
-                    formik.touched.destination ? formik.errors.destination : ""
+              <div className="sm:w-full lg:w-[48%] ">
+                <DateComponent
+                  Icon={<CalendarMonthIcon sx={{ fontSize: "24px" }} />}
+                  title={"To Date"}
+                  width="100%"
+                  minDate={
+                    formik.values.start_date
+                      ? formik.values.start_date
+                      : moment().format("YYYY-MM-DD")
                   }
-                  onPlaceSelect={(value: string) => {
-                    formik.setFieldValue("destination", value || "");
+                  onUpdate={(value: string) => {
+                    formik.setFieldValue("end_date", value);
                   }}
+                  errorMessage={
+                    formik.touched.end_date ? formik.errors.end_date : ""
+                  }
+                  value={formik.values.end_date}
                 />
               </div>
-            </div>
-            <div className="flex flex-wrap gap-2 mt-3">
-              <span className="text-sm text-gray-500 mr-2">
-                Popular In India:
-              </span>
-              {popularDestinations.domestic.map((dest, index) => (
-                <motion.button
-                  initial={{
-                    opacity: 0,
-                    y: 10,
-                  }}
-                  animate={{
-                    opacity: 1,
-                    y: 0,
-                    transition: {
-                      duration: 0.4,
-                      bounce: 20,
-                      stiffness: 200,
-                      delay: index * 0.1,
-                    },
-                  }}
-                  key={dest}
-                  type="button"
-                  onClick={() => formik.setFieldValue("destination", dest)}
-                  className="text-xs px-3 py-1 bg-gray-100 hover:bg-cyan-100 text-gray-700 hover:text-cyan-700 rounded-full transition-colors duration-200 cursor-pointer"
-                >
-                  {dest}
-                </motion.button>
-              ))}
-            </div>
-            <InputComponent
-              Icon={<MoneyIcon sx={{ fontSize: "24px" }} />}
-              title={"What's your budget?"}
-              type={"number"}
-              onUpdate={(value: string) => {
-                formik.setFieldValue("budget", value);
-              }}
-              min={1000}
-              max={10000000}
-              value={formik.values.budget}
-              errorMessage={formik.touched.budget ? formik.errors.budget : ""}
-              placeHolder={"What is your budget?"}
-            />
-            <div className="flex w-full flex-wrap items-center justify-between">
-              <DateComponent
-                Icon={<CalendarMonthIcon sx={{ fontSize: "24px" }} />}
-                title={"From when you are planning?"}
-                width="48%"
-                minDate={moment().format("YYYY-MM-DD")}
-                onUpdate={(value: string) => {
-                  formik.setFieldValue("start_date", value);
-                }}
-                errorMessage={
-                  formik.touched.start_date ? formik.errors.start_date : ""
-                }
-                value={formik.values.start_date}
-              />
-              <DateComponent
-                Icon={<CalendarMonthIcon sx={{ fontSize: "24px" }} />}
-                title={"Till?"}
-                width="48%"
-                minDate={
-                  formik.values.start_date
-                    ? formik.values.start_date
-                    : moment().format("YYYY-MM-DD")
-                }
-                onUpdate={(value: string) => {
-                  formik.setFieldValue("end_date", value);
-                }}
-                errorMessage={
-                  formik.touched.end_date ? formik.errors.end_date : ""
-                }
-                value={formik.values.end_date}
-              />
-            </div>
-
-            <div className="flex w-full flex-wrap items-center justify-between">
-              <InputSelect
-                Icon={<PeopleIcon sx={{ fontSize: "24px" }} />}
-                title={"Number of Travelers"}
-                width="100%"
-                options={[...Array(10)].map((_, i) => {
-                  return {
-                    key: (i + 1).toString(),
-                    value:
-                      i + 1 + " " + (i + 1 === 1 ? "Traveler" : "Travelers"),
-                  };
-                })}
-                errorMessage={
-                  formik.touched.traveler_count
-                    ? formik.errors.traveler_count
-                    : ""
-                }
-                onUpdate={(value: string) => {
-                  formik.setFieldValue("traveler_count", value);
-                }}
-                value={formik.values.traveler_count}
-              />
-            </div>
-            <div>
-              <div className="flex">
-                <div className="text-cyan-500 mr-2">
-                  <EmojiObjectsOutlinedIcon sx={{ fontSize: "24px" }} />{" "}
+              <div className="flex w-full mt-5 flex-wrap items-center justify-between">
+                <div className="sm:w-full lg:w-[48%] ">
+                  <InputComponent
+                    Icon={<MoneyIcon sx={{ fontSize: "24px" }} />}
+                    title={"What's your budget?"}
+                    type={"number"}
+                    onUpdate={(value: string) => {
+                      formik.setFieldValue("budget", value);
+                    }}
+                    min={1000}
+                    max={10000000}
+                    value={formik.values.budget}
+                    errorMessage={
+                      formik.touched.budget ? formik.errors.budget : ""
+                    }
+                    placeHolder={"What is your budget?"}
+                  />
                 </div>
-                <h3 className={`text-lg font-semibold text-gray-900 `}>
-                  What are your travel interests?
-                </h3>
+                <div className="sm:w-full lg:w-[48%] ">
+                  <InputSelect
+                    Icon={<PeopleIcon sx={{ fontSize: "24px" }} />}
+                    title={"Number of Travelers"}
+                    width="100%"
+                    options={[...Array(10)].map((_, i) => {
+                      return {
+                        key: (i + 1).toString(),
+                        value:
+                          i +
+                          1 +
+                          " " +
+                          (i + 1 === 1 ? "Traveler" : "Travelers"),
+                      };
+                    })}
+                    errorMessage={
+                      formik.touched.traveler_count
+                        ? formik.errors.traveler_count
+                        : ""
+                    }
+                    onUpdate={(value: string) => {
+                      formik.setFieldValue("traveler_count", value);
+                    }}
+                    value={formik.values.traveler_count}
+                  />
+                </div>
               </div>
-
-              <p
-                className={`mb-4 text-sm text-gray-500 ${
-                  formik.errors.interests && "text-red-800"
-                }`}
-              >
-                Select all that interest you (minimum 1 required)
+              <div className=" w-full">
+                <p className="text-md font-semibold  text-gray-800">Intrest</p>
+                <div className="flex flex-wrap my-5 w-[100%]  justify-around items-center">
+                  {interests.map((item, index) => {
+                    return (
+                      <motion.div
+                        initial={{
+                          opacity: 0,
+                        }}
+                        animate={{
+                          opacity: 1,
+                        }}
+                        transition={{
+                          duration: 1,
+                          ease: "easeInOut",
+                          delay: index * 0.1,
+                        }}
+                        key={item.id}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleThemeToggle(item.name as string);
+                        }}
+                        className={`px-6 py-1 w-[90px] h-[80px] flex items-center flex-col justify-center rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer ${
+                          formik.values.interests.includes(item.name as string)
+                            ? "bg-cyan-100 text-black-900 border-2 border-cyan-300"
+                            : "bg-gray-100 text-gray-500 border-gray-200 border-2  hover:bg-gray-00"
+                        }`}
+                      >
+                        {item.icon}
+                        {item.name}
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+            <div className=" w-full">
+              <p className="text-md font-semibold  text-gray-800">
+                Preferred Meal
               </p>
-              <div className="flex flex-wrap gap-5 items-center justify-around">
-                {interests.map((interests, index) => (
-                  <motion.button
-                    initial={{
-                      opacity: 0,
-                    }}
-                    animate={{
-                      opacity: 1,
-                    }}
-                    transition={{
-                      duration: 1,
-                      ease: "easeInOut",
-                      delay: index * 0.1,
-                    }}
-                    key={interests.id}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      handleThemeToggle(interests.name as string);
-                    }}
-                    className={`px-6 py-1 w-2/5 h-[80px] rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer ${
-                      formik.values.interests.includes(interests.name as string)
-                        ? "bg-cyan-100 text-cyan-700 border-2 border-cyan-300"
-                        : "bg-gray-100 text-gray-700 border-2 border-transparent hover:bg-gray-200"
-                    }`}
-                  >
-                    <div className="flex items-center justify-start ">
-                      <div className="text-[26px] w-[50px]">
-                        {interests.icon}
-                      </div>
-                      <div className=" text-left">
-                        <p className="text-[18px] font-bold">
-                          {interests.name}
-                        </p>
-                        <p className="font-semibold text-gray-600">
-                          {interests.desc}
-                        </p>
-                      </div>
-                    </div>
-                  </motion.button>
-                ))}
-              </div>
-            </div>
-            <div className="mt-7">
-              <div className=" flex space-x-2">
-                <div className="text-cyan-500 mr-2">
-                  {" "}
-                  <FastfoodOutlinedIcon sx={{ fontSize: "24px" }} />
-                </div>
-
-                <p className="text-lg font-semibold text-gray-800">
-                  Food Preference
-                </p>
-              </div>
-              <div className="flex my-2 pl-2 ">
-                {mealType.map((i) => {
+              <div className="flex flex-wrap  my-5 w-[100%]  justify-start items-center">
+                {mealType.map((item, index) => {
                   return (
-                    <motion.button
+                    <motion.div
+                      initial={{
+                        opacity: 0,
+                      }}
+                      animate={{
+                        opacity: 1,
+                      }}
+                      transition={{
+                        duration: 1,
+                        ease: "easeInOut",
+                        delay: index * 0.1,
+                      }}
+                      key={item.type}
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        formik.setFieldValue("meal_preference", i.type);
+
+                        formik.setFieldValue("meal_preference", item.type);
                       }}
-                      className={`p-4 mx-2 cursor-pointer rounded-xl transition-all duration-500  ${
-                        formik.values.meal_preference == i.type
-                          ? "bg-" +
-                            i.color +
-                            "-100 border-2 border-" +
-                            i.color +
-                            "-300"
-                          : "bg-gray-200 border-2 border-gray-200 hover:bg-gray-300 hover:border-gray-300"
+                      className={`px-6 py-1 mx-5  h-[60px] flex items-center flex-col justify-center rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer ${
+                        formik.values.meal_preference == item.type
+                          ? "bg-cyan-100 text-black-900 border-2 border-cyan-300"
+                          : "bg-gray-100 text-gray-500 border-gray-200 border-2  hover:bg-gray-00"
                       }`}
                     >
-                      {i.label}
-                    </motion.button>
+                      {item.label}
+                    </motion.div>
                   );
                 })}
               </div>
-              {formik.errors.meal_preference}
             </div>
-            <TextAreaComponent
-              isOptional={true}
-              title={"Special Requests"}
-              Icon={<ChatBubbleOutlineOutlinedIcon sx={{ fontSize: "24px" }} />}
-              onUpdate={(val: string) => {
-                formik.setFieldValue("special_requests", val);
-              }}
-              value={formik.values.special_requests}
-              placeHolder={
-                "Any special requirements or preferences for your trip?"
-              }
-            />
-            <div className="pt-6">
+            <div className="pt-6 w-full">
               {error && error.length > 0 && (
                 <p className="text-md text-center text-red-400 font-semibold">
                   {" "}
@@ -473,7 +414,7 @@ const ItineraryForm: React.FC = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full relative bg-cyan-400 hover:bg-cyan-500 text-white font-semibold py-4 px-6 rounded-xl transition-colors duration-200 text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                className="w-full relative cursor-pointer bg-cyan-700 hover:bg-cyan-500 text-white font-semibold py-4 px-6 rounded-xl transition-colors duration-200 text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
               >
                 {loading ? (
                   <div className="flex items-center justify-center space-x-3">
@@ -538,7 +479,7 @@ const ItineraryForm: React.FC = () => {
             </div>
           </form>
         </div>
-      </main>
+      </div>
     </motion.div>
   );
 };

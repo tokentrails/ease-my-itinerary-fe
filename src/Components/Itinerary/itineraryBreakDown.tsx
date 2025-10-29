@@ -33,9 +33,10 @@ const ItimeraryBreakDown = (props: Props) => {
        <div className="flex items-center">
         <div className="flex flex-row-reverse items-center">
           <p className="ml-2 text-cyan-500 font-bold text-xl">
-          ₹{trip.total_cost.toLocaleString()}
+          ₹{trip.total_cost.toFixed(2).toLocaleString()}
         </p>
-           {trip.saved && <span className="text-sm mt-1 text-green-700 text-black-400">₹{trip.saved.toLocaleString()} saved </span>}
+        
+           {trip.saved && trip.saved>0 && <span className="text-sm mt-1 text-green-700 text-black-400">₹{trip.saved.toFixed(2).toLocaleString()} saved </span>}
         </div>
          
         <button
@@ -66,23 +67,23 @@ const ItimeraryBreakDown = (props: Props) => {
         }`}>
           <div className="flex my-2 mt-5  items-center justify-between px-4">
             <p>Accommodation</p>
-            <p>₹{breakDown.accommodation.toLocaleString()}</p>
+            <p>₹{breakDown.accommodation.toFixed(2).toLocaleString()}</p>
           </div>
           <div className="flex my-2  items-center justify-between px-4">
             <p>Transport</p>
-            <p>₹{breakDown.transport.toLocaleString()}</p>
+            <p>₹{breakDown.transport.toFixed(2).toLocaleString()}</p>
           </div>
           <div className="flex my-2  items-center justify-between px-4">
             <p>Activities</p>
-            <p>₹{breakDown.activities.toLocaleString()}</p>
+            <p>₹{breakDown.activities.toFixed(2).toLocaleString()}</p>
           </div>
           <div className="flex my-2  items-center justify-between px-4">
             <p>Meals</p>
-            <p>₹{breakDown.meals.toLocaleString()}</p>
+            <p>₹{breakDown.meals.toFixed(2).toLocaleString()}</p>
           </div>
           <div className="flex my-2 items-center justify-between px-4">
             <p>Miscellaneous</p>
-            <p>₹{breakDown.miscellaneous.toLocaleString()}</p>
+            <p>₹{breakDown.miscellaneous.toFixed(2).toLocaleString()}</p>
           </div>
         </div>
 

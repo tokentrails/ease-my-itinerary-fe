@@ -31,10 +31,10 @@ const ActivityList = (props: ActivityProps) => {
           {activity.cost && activity.cost != 0 ? (
             <div className="flex flex-col justify-end items-end">
               <p className="font-medium text-lg text-black">
-                ₹{activity.cost.toLocaleString()}
+                ₹{activity.cost.toFixed(2).toLocaleString()}
               </p>
               <p className="text-sm text-gray-400">
-                ₹{activity.cost_per_person}/person
+                ₹{activity.cost_per_person.toFixed(2)}/person
               </p>
             </div>
           ) : (

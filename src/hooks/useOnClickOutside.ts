@@ -1,0 +1,28 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useEffect } from 'react';
+
+type AnyEvent = MouseEvent | TouchEvent;
+
+export function useOnClickOutside(
+  ref: any,
+  handler: (event: AnyEvent) => void
+): void {
+  useEffect(() => {
+    const listener = (event: AnyEvent) => {
+      const el = ref?.current;
+      // Do nothing if clicking ref's element or descendent elements
+      if (!el || el.contains(event.target as Node)) {
+        return;
+      }
+      handler(event);
+    };
+
+    document.addEventListener('mousedown', listener);
+    document.addEventListener('touchstart', listener);
+
+    return () => {
+      document.removeEventListener('mousedown', listener);
+      document.removeEventListener('touchstart', listener);
+    };
+  }, [ref, handler]);
+}
