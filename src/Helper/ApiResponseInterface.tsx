@@ -8,7 +8,24 @@ export interface Location {
   longitude: number;
 }
 
-export interface Activity {
+export interface TransportEvent {
+  id: string;
+  mode: string;
+  from_location: Location;
+  to_location: Location;
+  duration: string;
+  cost: number;
+  cost_per_person: number;
+  description: string;
+  booking_url?: string;
+  carrier: string;
+  service_class: string;
+  vehicle_number: string;
+  route_type: string;
+  notes?: string[];
+}
+
+export interface ActivityEvent {
   id: string;
   name: string;
   description: string;
@@ -21,15 +38,14 @@ export interface Activity {
   cost: number;
   cost_per_person: number;
   booking_required: boolean;
-  booking_url?: string; 
   rating: number;
   review_count: number;
-  tips: string[];
-  opening_hours?: string;
+  tips?: string[];
+  opening_hours: string;
   priority: number;
 }
 
-export interface Meal {
+export interface MealEvent {
   id: string;
   type: string;
   restaurant_name: string;
@@ -37,28 +53,53 @@ export interface Meal {
   cuisine: string;
   location: Location;
   reservation_time: string;
+  end_time?: string;
   cost: number;
   cost_per_person: number;
   rating: number;
   review_count: number;
-  specialties: string[];
-  dietary_info: string[];
+  specialties?: string[];
+  dietary_info?: string[];
   booking_required: boolean;
 }
 
-export interface Transport {
+export interface TripEvent {
   id: string;
-  mode: string;
-  from_location: Location;
-  to_location: Location;
-  departure_time: string;
-  arrival_time: string;
-  duration: string;
-  cost: number;
-  cost_per_person: number;
-  description: string;
-  notes?: string[]; 
+  event_type: "transport" | "activity" | "meal";
+  start_time: string;
+  end_time?: string;
+  transport?: TransportEvent;
+  activity?: ActivityEvent;
+  meal?: MealEvent;
 }
+
+interface Topic {
+  topic: string;
+  summary: string;
+  key_points: string[];
+  sources: number[];
+  confidence: number;
+}
+
+interface Topics {
+  attractions: Topic;
+  food: Topic;
+}
+
+interface Summary {
+  summary: string;
+  topics: Topics;
+  suggestions: Record<string, unknown>;
+}
+
+export interface DestinationEvent {
+  name: string;
+  date: string;
+  description: string;
+  significance: string;
+}
+
+export interface TripEvent {
 
 export interface Weather {
   date: string;
@@ -76,11 +117,9 @@ export interface DayPlan {
   date: string;
   title: string;
   description: string;
-  activities: Activity[];
-  meals: Meal[];
-  transport: Transport[];
+  events: Event[];
   daily_cost: number;
-  weather: Weather;
+  weather?: Weather;
   notes?: string[];
 }
 
@@ -122,6 +161,68 @@ export interface WeatherInfo {
   recommendation: string;
 }
 
+// Using DestinationEvent interface from above
+
+interface CostRange {
+  min: number;
+  max: number;
+  avg: number;
+  unit: string;
+}
+
+interface BudgetRange {
+  currency: string;
+  economy: number;
+  comfort: number;
+  luxury: number;
+  per_day_avg: number;
+}
+
+interface CostBreakdown {
+  accommodation: CostRange;
+  food: CostRange;
+  transport: CostRange;
+  activities: CostRange;
+  miscellaneous: CostRange;
+}
+
+interface RecommendedDuration {
+  min_days: number;
+  max_days: number;
+  optimal_days: number;
+  reasoning: string;
+}
+
+interface Suggestions {
+  recommended_duration: RecommendedDuration;
+  best_travel_months: string[];
+  current_season: string;
+  budget_range: BudgetRange;
+  cost_breakdown: CostBreakdown;
+  recommended_travel_style: string[];
+  popular_interests: string[];
+  must_visit_attractions: string[];
+  local_tips: string[];
+  upcoming_events: DestinationEvent[];
+  weather_considerations: string;
+  ideal_for: string[];
+  avoidance_reasons: string[];
+}
+
+export interface DestinationResponse {
+  success: boolean;
+  message: string;
+  data: {
+    destination: string;
+    summary: string;
+    sources: null | Record<string, unknown>[];
+    generated_at: string;
+    tokens_used: number;
+    search_queries: string[];
+    suggestions: Suggestions;
+  }
+}
+
 export interface Trip {
   id: string;
   source: string;
@@ -146,4 +247,3 @@ export interface Trip {
   travel_tips: string[];
   weather_info: WeatherInfo;
 }
-

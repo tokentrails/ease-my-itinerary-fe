@@ -1,0 +1,653 @@
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { Box, ToggleButton, ToggleButtonGroup } from "@mui/material";
+import { AnimatePresence, motion } from "framer-motion";
+import { MapPin, Clock, IndianRupee, Thermometer, Mountain, Utensils, AlertCircle } from "lucide-react";
+import { apiCaller } from "../../utils/apiCall";
+import Loader from "../../Components/Itinerary/loader";
+import type { DestinationResponse } from "../../Helper/ApiResponseInterface";
+import type { Summary } from "../../types/destination";
+
+interface CostBreakdown {
+  min: number;
+  max: number;
+  avg: number;
+}
+
+interface Tab {
+  id: string;
+  value: string;
+  label: string;
+}
+
+const tabs: Tab[] = [
+  { id: "overview", value: "overview", label: "Overview" },
+  { id: "thingsToDo", value: "thingsToDo", label: "Things to Do" },
+  { id: "food", value: "food", label: "Food" },
+  { id: "costs", value: "costs", label: "Costs" },
+  { id: "tips", value: "tips", label: "Tips" },
+];
+
+const loadingMessages = [
+  "Discovering hidden gems in your chosen destination",
+  "Gathering local insights and recommendations",
+  "Finding the best attractions and activities",
+  "Creating a personalized destination guide",
+  "Curating unique experiences just for you",
+];
+
+export default function DestinationGuide() {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [loading, setLoading] = useState(true);
+  const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
+  const [activeTab, setActiveTab] = useState("overview");
+  const [destinationData, setDestinationData] = useState<DestinationResponse['data'] | null>(null);
+  const [parsedSummary, setParsedSummary] = useState<Summary | null>(null);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await apiCaller(
+          "destinations/research",
+          "GET",
+          undefined,
+          { destination: searchParams.get("destination") || "" }
+        ) as DestinationResponse;
+        
+        if (response.success) {
+          setDestinationData(response.data);
+          setParsedSummary(JSON.parse(response.data.summary) as Summary);
+        }
+      } catch (error) {
+        console.error("Error fetching destination data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [searchParams]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 500);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    let messageInterval: NodeJS.Timeout | null = null;
+    if (loading) {
+      messageInterval = setInterval(() => {
+        setCurrentMessageIndex((prev) => (prev + 1) % loadingMessages.length);
+      }, 3000);
+    }
+    return () => {
+      if (messageInterval) {
+        clearInterval(messageInterval);
+      }
+    };
+  }, [loading]);
+
+  const handleGenerateItinerary = () => {
+    if (!destinationData) return;
+    navigate("/itinerary-form", {
+      state: {
+        destination: destinationData.destination,
+        recommendedDuration: destinationData.suggestions.recommended_duration.optimal_days,
+      },
+    });
+  };
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  if (loading) {
+    return <Loader messages={loadingMessages[currentMessageIndex]} />;
+  }
+
+  if (!destinationData || !parsedSummary) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen p-4">
+        <h1 className="text-2xl font-bold text-gray-800 mb-4">
+          No destination data available
+        </h1>
+        <p className="text-gray-600 mb-6">
+          Unable to load destination information. Please try again later.
+        </p>
+        <button
+          onClick={() => navigate(-1)}
+          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+        >
+          Go Back
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <AnimatePresence mode="wait">
+        <div>
+          <div>
+            <div className="bg-white ">
+              <div className="max-w-5xl mx-auto px-6 py-16">
+                <div className="flex items-center gap-2 mb-3">
+                  <MapPin className="w-10 h-5" style={{ color: "#2093EF" }} />
+                  <span
+                    className="text-sm font-medium uppercase tracking-wide"
+                    style={{ color: "#2093EF" }}
+                  >
+                    Destination
+                  </span>
+                </div>
+                <h1 className="text-5xl font-light text-gray-900 mb-4">
+                  {destinationData.destination}
+                </h1>
+
+                <div className="flex flex-wrap gap-6 mt-8 text-sm">
+                  <div className="flex items-center gap-2 text-gray-700">
+                    <Clock className="w-4 h-4" style={{ color: "#2093EF" }} />
+                    <span>
+                      {destinationData.suggestions.recommended_duration.optimal_days}{" "}
+                      days recommended
+                    </span>
+                  </div>
+                  {(destinationData.suggestions.budget_range.economy > 0 ||
+                    destinationData.suggestions.budget_range.comfort > 0 ||
+                    destinationData.suggestions.budget_range.luxury > 0) && (
+                    <div className="flex items-center gap-2 text-gray-700">
+                      <IndianRupee
+                        className="w-4 h-4"
+                        style={{ color: "#2093EF" }}
+                      />
+                      <span>
+                        ₹
+                        {Math.round(
+                          (destinationData.suggestions.budget_range.economy +
+                            destinationData.suggestions.budget_range.comfort +
+                            destinationData.suggestions.budget_range.luxury) /
+                            3
+                        )}
+                        /day average
+                      </span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2 text-gray-700">
+                    <Thermometer
+                      className="w-4 h-4"
+                      style={{ color: "#2093EF" }}
+                    />
+                    <span>17-26°C current</span>
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleGenerateItinerary}
+                  className="mt-8 px-6 py-3 bg-[#2093EF] text-white rounded-lg hover:bg-[#1a7ac7] transition-colors"
+                >
+                  Generate Itinerary
+                </button>
+              </div>
+            </div>
+            <Box className="bg-white sticky top-0 z-10">
+              <div className="max-w-5xl mx-auto px-6 py-4">
+                <ToggleButtonGroup
+                  value={activeTab}
+                  exclusive
+                  onChange={(_, newValue) => newValue && setActiveTab(newValue)}
+                  aria-label="destination sections"
+                  className="w-full flex flex-wrap gap-2"
+                  sx={{
+                    "& .MuiToggleButtonGroup-grouped": {
+                      border: "1px solid #E5E7EB !important",
+                      "&:not(:first-of-type)": {
+                        borderRadius: "0.375rem",
+                        marginLeft: "0 !important",
+                      },
+                      "&:first-of-type": {
+                        borderRadius: "0.375rem",
+                      },
+                      "&.Mui-selected": {
+                        backgroundColor: "#2093EF !important",
+                        color: "white !important",
+                        borderColor: "#2093EF !important",
+                        "& svg": {
+                          color: "white",
+                        },
+                      },
+                      flex: {
+                        xs: "1 1 calc(50% - 0.5rem)",
+                        sm: "0 1 auto",
+                      },
+                      padding: "8px 16px",
+                      color: "#6B7280",
+                      textTransform: "none",
+                      fontSize: "0.875rem",
+                      fontWeight: 500,
+                      "&:hover": {
+                        backgroundColor: "#F3F4F6",
+                      },
+                    },
+                  }}
+                >
+                  {tabs.map((tab) => (
+                    <ToggleButton
+                      key={tab.id}
+                      value={tab.value}
+                      className="flex items-center gap-2 whitespace-nowrap"
+                    >
+                      {tab.label}
+                    </ToggleButton>
+                  ))}
+                </ToggleButtonGroup>
+              </div>
+            </Box>
+
+            {/* Content Area */}
+            <div className="max-w-5xl mx-auto px-3 py-12">
+              {/* Overview Tab */}
+              {activeTab === "overview" && (
+                <div className="space-y-2 animate-fadeIn">
+                  {/* Current Season */}
+                  <div className=" rounded-lg">
+                    <div className="flex items-start">
+                      <Thermometer
+                        className="w-20 h-5 mt-1"
+                        style={{ color: "#2093EF" }}
+                      />
+                      <div>
+                        <h2 className="text-xl font-medium text-gray-900 mb-2">
+                          Current Weather
+                        </h2>
+                        <p className="text-gray-600 leading-relaxed">
+                          {destinationData.suggestions.current_season}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Best Months */}
+                  <div className="rounded-lg p-2">
+                    <h2 className="text-xl font-medium text-gray-900 mb-6">
+                      Best Time to Visit
+                    </h2>
+                    <div className="flex flex-wrap gap-3">
+                      {destinationData.suggestions.best_travel_months.map(
+                        (month) => (
+                          <span
+                            key={month}
+                            className="px-4 py-2 rounded-full text-sm font-medium border"
+                            style={{
+                              borderColor: "#2093EF",
+                              color: "#2093EF",
+                              backgroundColor: "#F0F8FF",
+                            }}
+                          >
+                            {month}
+                          </span>
+                        )
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Upcoming Events */}
+                  <div className="">
+                    <h2 className="text-xl font-medium text-gray-900 mb-3">
+                      Upcoming Events
+                    </h2>
+                    <div className="space-y-6">
+                      {destinationData.suggestions.upcoming_events.map(
+                        (event, idx) => (
+                          <div
+                            key={idx}
+                            className="border-l-2 pl-6 py-2"
+                            style={{ borderColor: "#2093EF" }}
+                          >
+                            <h3 className="font-medium text-gray-900 mb-1">
+                              {event.name}
+                            </h3>
+                            <p
+                              className="text-sm font-medium mb-2"
+                              style={{ color: "#2093EF" }}
+                            >
+                              {event.date}
+                            </p>
+                            <p className="text-gray-600 text-sm">
+                              {event.description}
+                            </p>
+                          </div>
+                        )
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Attractions Tab */}
+              {activeTab === "attractions" && (
+                <div className="space-y-3 animate-fadeIn">
+                  {/* About Attractions */}
+                  <div className="  ">
+                    <div className="flex items-start gap-0">
+                      <Mountain
+                        className="w-10 h-5 mt-1"
+                        style={{ color: "#2093EF" }}
+                      />
+                      <div>
+                        <h2 className="text-xl ml-2 font-medium text-gray-900 mb-2">
+                          About the Attractions
+                        </h2>
+                        <p className="text-gray-600 leading-relaxed">
+                          {parsedSummary.topics.attractions.summary}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Key Attractions */}
+                  <div className="">
+                    <h2 className="text-xl font-medium text-gray-900 mb-6">
+                      Featured Attractions
+                    </h2>
+                    <div className="space-y-4">
+                      {parsedSummary.topics.attractions.key_points.map(
+                        (highlight: string, idx: number) => (
+                          <div
+                            key={idx}
+                            className="bg-[#F0F8FF] rounded-lg p-4 border"
+                            style={{ borderColor: "#2093EF" }}
+                          >
+                            <div className="flex gap-4 items-start">
+                              <MapPin
+                                className="w-4 h-4 mt-1 flex-shrink-0"
+                                style={{ color: "#2093EF" }}
+                              />
+                              <p className="text-gray-700 text-sm">
+                                {highlight}
+                              </p>
+                            </div>
+                          </div>
+                        )
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Must Visit Places */}
+                  <div className="">
+                    <h2 className="text-xl font-medium text-gray-900 mb-6">
+                      Must-Visit Spots
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {destinationData.suggestions.must_visit_attractions.map(
+                        (place, idx) => (
+                          <div
+                            key={idx}
+                            className="p-4 rounded-lg text-sm font-medium flex items-center gap-2 transition-all hover:scale-105"
+                            style={{
+                              backgroundColor: "#F0F8FF",
+                              color: "#2093EF",
+                            }}
+                          >
+                            <MapPin className="w-4 h-4 flex-shrink-0" />
+                            {place}
+                          </div>
+                        )
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Food Tab */}
+              {activeTab === "food" && (
+                <div className="space-y-8 animate-fadeIn">
+                  {/* About Cuisine */}
+                  <div className="">
+                    <div className="flex items-start 4">
+                      <Utensils
+                        className="w-10 h-5 mt-1"
+                        style={{ color: "#2093EF" }}
+                      />
+                      <div>
+                        <h2 className="text-xl font-medium text-gray-900 ml-2 mb-2">
+                          Local Cuisine
+                        </h2>
+                        <p className="text-gray-600 leading-relaxed">
+                          {parsedSummary.topics.food.summary}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Food Highlights */}
+                  <div className="">
+                    <h2 className="text-xl font-medium text-gray-900 mb-6">
+                      Must-Try Dishes
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {parsedSummary.topics.food.key_points.map(
+                        (point: string, idx: number) => (
+                          <div
+                            key={idx}
+                            className="p-4 rounded-lg transition-all hover:scale-105"
+                            style={{ backgroundColor: "#F0F8FF" }}
+                          >
+                            <div className="flex ">
+                              <Utensils
+                                className="w-4 h-4 mt-1 flex-shrink-0"
+                                style={{ color: "#2093EF" }}
+                              />
+                              <p className="text-gray-700 ml-2 text-sm">
+                                {point}
+                              </p>
+                            </div>
+                          </div>
+                        )
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Budget Tab */}
+              {activeTab === "costs" && (
+                <div className="space-y-4  animate-fadeIn">
+                  {/* Budget Overview */}
+                  <div className="">
+                    <div className="flex items-start">
+                      <div className="w-full ">
+                        <h2 className="text-xl font-medium text-gray-900 mb-6 flex">
+                          {" "}
+                          <IndianRupee
+                            className="10 h-5 mt-1 "
+                            style={{ color: "#2093EF" }}
+                          />{" "}
+                          Budget Categories
+                        </h2>
+                        <div className="flex   w-full justify-between items-center  ">
+                          {[
+                            {
+                              label: "Economy",
+                              value:
+                                destinationData.suggestions.budget_range
+                                  .economy,
+                            },
+                            {
+                              label: "Comfort",
+                              value:
+                                destinationData.suggestions.budget_range
+                                  .comfort,
+                            },
+                            {
+                              label: "Luxury",
+                              value:
+                                destinationData.suggestions.budget_range
+                                  .luxury,
+                            },
+                          ].map((budget) => (
+                            <div
+                              key={budget.label}
+                              className="px-5  rounded-lg mx-1 transition-all hover:scale-105"
+                              style={{ backgroundColor: "#F0F8FF" }}
+                            >
+                              <h3
+                                className="font-medium text-sm mb-3"
+                                style={{ color: "#2093EF" }}
+                              >
+                                {budget.label}
+                              </h3>
+                              <p className="text-2xl font-light text-gray-900">
+                                ₹{budget.value}
+                              </p>
+                              <p className="text-xs text-gray-500 mt-2">
+                                per day
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-5">
+                    <h2 className="text-xl font-medium text-gray-900 mb-6">
+                      Cost Breakdown
+                    </h2>
+                    <div className="space-y-6">
+                      {Object.entries(
+                        destinationData.suggestions.cost_breakdown
+                      ).map(([category, costs]: [string, CostBreakdown]) => (
+                        <div
+                          key={category}
+                          className="p-4 rounded-lg mb-4 transition-all hover:scale-105"
+                          style={{ backgroundColor: "#F0F8FF" }}
+                        >
+                          <div className="flex justify-between items-center mb-3">
+                            <h4 className="font-medium text-gray-900 capitalize text-sm">
+                              {category}
+                            </h4>
+                            <span
+                              className="text-xl font-light"
+                              style={{ color: "#2093EF" }}
+                            >
+                              ₹{costs.avg}{" "}
+                              <span className="text-sm">avg</span>
+                            </span>
+                          </div>
+                          <div className="flex justify-between text-xs text-gray-500 mb-3">
+                            <span>₹{costs.min} (min)</span>
+                            <span>₹{costs.max} (max)</span>
+                          </div>
+                          <div className="bg-white rounded-full h-1.5 overflow-hidden">
+                            <div
+                              className="h-full rounded-full transition-all"
+                              style={{
+                                width: `${(costs.avg / costs.max) * 100}%`,
+                                backgroundColor: "#2093EF",
+                              }}
+                            ></div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Tips Tab */}
+              {activeTab === "tips" && (
+                <div className="space-y-8 animate-fadeIn">
+                  {/* Travel Tips Overview */}
+                  <div className="">
+                    <div className="flex items-start ">
+                      <AlertCircle
+                        className="w-10 h-5 mt-1"
+                        style={{ color: "#2093EF" }}
+                      />
+                      <div>
+                        <h2 className="text-xl  font-medium text-gray-900 mb-2">
+                          Essential Travel Tips
+                        </h2>
+                        <p className="text-gray-600 leading-relaxed">
+                          Make the most of your visit with these local
+                          insights and recommendations.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Tips List */}
+                  <div className="">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {destinationData.suggestions.local_tips.map(
+                        (tip, idx) => (
+                          <div
+                            key={idx}
+                            className="p-4 rounded-lg transition-all hover:scale-105"
+                            style={{ backgroundColor: "#F0F8FF" }}
+                          >
+                            <div className="flex gap-4">
+                              <div
+                                className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium text-white"
+                                style={{ backgroundColor: "#2093EF" }}
+                              >
+                                {idx + 1}
+                              </div>
+                              <p className="text-gray-700 text-sm leading-relaxed">
+                                {tip}
+                              </p>
+                            </div>
+                          </div>
+                        )
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Scroll to Top Button */}
+          {showScrollTop && (
+            <motion.button
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              onClick={scrollToTop}
+              className="fixed bottom-8 right-8 p-3 rounded-full bg-[#2093EF] text-white shadow-lg hover:bg-[#1a7ac7] transition-colors"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 10l7-7m0 0l7 7m-7-7v18"
+                />
+              </svg>
+            </motion.button>
+          )}
+
+          <style>{`
+            @keyframes fadeIn {
+              from { opacity: 0; transform: translateY(10px); }
+              to { opacity: 1; transform: translateY(0); }
+            }
+            .animate-fadeIn {
+              animation: fadeIn 0.4s ease-out;
+            }
+          `}</style>
+        </div>
+      </AnimatePresence>
+    </div>
+  );
+}

@@ -14,7 +14,9 @@ const HomePage = () => {
   const CreateItinerary = () => {
     navigate("/Itinerary");
   };
-
+  const Opendestination = (destination: string) => {
+    navigate("/Destination" + "?destination=" + destination);
+  };
   return (
     <div className="flex w-[100vw]  pb-5 bg-white flex-col sm:flex-row md:flex-col lg:flex-row items-center justify-between sm:py-2 md:py-3 py-10 sm:px-2 md:px-3 px-3  ">
       <div className="sm:w-full md:w-full  lg:w-1/2 flex   justify-center flex-col  h-full ">
@@ -27,7 +29,8 @@ const HomePage = () => {
         </h2>
         <p
           onClick={CreateItinerary}
-          className="px-5  py-2 rounded-[20px] w-fit bg-cyan-500 text-white"
+          className="px-5  py-2 rounded-[20px] w-fit text-white"
+          style={{ backgroundColor: '#2093EF' }}
         >
           Generate Itienenary with Gen AI
         </p>
@@ -35,7 +38,7 @@ const HomePage = () => {
       <div className="sm:w-full md:w-full lg:w-1/3 sm:mt-4 md:mt-5 lg:mt-0 ">
         <p className=" text-xl font-semibold mt-5">
           Just Search Destination, Let{" "}
-          <span className="text-cyan-500 underline">AI</span> do the job.
+          <span style={{ color: '#2093EF' }} className="underline">AI</span> do the job.
         </p>
         <motion.div
           initial={{
@@ -62,7 +65,12 @@ const HomePage = () => {
               setSearch(value);
             }}
           />
-          <button className="ml-2 cursor-pointer hover:text-cyan-500">
+          <button
+            onClick={() => {
+              Opendestination(search);
+            }}
+            className="ml-2 cursor-pointer"
+          >
             <SearchIcon sx={{ fontSize: "28px" }} />
           </button>
         </motion.div>
@@ -85,6 +93,9 @@ const HomePage = () => {
           <CustomeSlider
             items={Cities}
             onClick={(item: iSliderItem, index: number) => {
+
+              Opendestination(item.name);
+
               console.log({
                 item,
                 index,

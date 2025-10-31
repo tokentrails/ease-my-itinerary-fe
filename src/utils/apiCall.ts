@@ -40,7 +40,7 @@ export const streamApiCaller = async (
   method: HttpMethod,
   body?: Record<string, any>,
   customHeaders?: Record<string, string>,
-  onStreamData?: (chunk: string) => void
+  onStreamData?: (chunk: any) => void
 ): Promise<void> => {
   const response = await fetch("https://ease-my-itinerary-703138722646.us-central1.run.app" + url, {
     method,
@@ -48,7 +48,9 @@ export const streamApiCaller = async (
       'Content-Type': 'application/json',
       ...customHeaders,
     },
-    body: body ? JSON.stringify(body) : undefined,
+    body: (method === 'POST' || method === 'PUT' || method === 'PATCH') && body 
+          ? JSON.stringify(body) 
+          : undefined,
   });
 
   if (!response.ok) {
@@ -56,7 +58,7 @@ export const streamApiCaller = async (
       message: 'An unknown error occurred.',
     }));
     throw new Error(
-      `API Error: ${response.status} ${response.statusText} - ${errorData.message || ''}`
+      `API Error: ${response.status} ${response.statusText} - ${errorData.message || 'Unknown error'}`
     );
   }
 
@@ -66,17 +68,36 @@ export const streamApiCaller = async (
 
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
-  let result = '';
+  let buffer = "";
 
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) {
-      break;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+
+      // Process complete SSE messages
+      let lastIndex = 0;
+      while ((lastIndex = buffer.indexOf('\n\n')) !== -1) {
+        const message = buffer.substring(0, lastIndex);
+        buffer = buffer.substring(lastIndex + 2);
+
+        const dataLine = message.split('\n').find(line => line.startsWith('data:'));
+        if (dataLine) {
+          const jsonString = dataLine.substring(5).trim();
+          try {
+            const parsedData = JSON.parse(jsonString);
+            if (onStreamData) {
+              onStreamData(parsedData);
+            }
+          } catch (e) {
+            console.error("Error parsing streamed JSON:", e);
+          }
+        }
+      }
     }
-    const chunk = decoder.decode(value, { stream: true });
-    result += chunk;
-    if (onStreamData) {
-      onStreamData(chunk);
-    }
+  } finally {
+    reader.releaseLock();
   }
 };

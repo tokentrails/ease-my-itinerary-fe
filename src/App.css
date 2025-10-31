@@ -1,10 +1,35 @@
 @import "tailwindcss";
 
 .datePickerMain {
-    outline: none !important;
-
+  outline: none !important;
 }
 
-.min-text-16{
-font-size: calc(16px + 2vw);
+.min-text-16 {
+  font-size: calc(16px + 2vw);
+}
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(200%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 1s infinite;
+}
+
+@keyframes pulse-slow {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 1s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }

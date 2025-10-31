@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { gsap } from "gsap";
 import type { iSliderItem } from "../utils/customeTypo";
 import ArrowBackOutlinedIcon from "@mui/icons-material/ArrowBackOutlined";
@@ -12,36 +12,56 @@ interface Props {
 }
 
 const CustomeSlider = (props: Props) => {
-  const { items, autoScrollInterval = 5000 } = props;
+  const { items, autoScrollInterval = 5000, onClick } = props;
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isInitialized, setIsInitialized] = useState(false);
   const cardsRef = useRef<(HTMLDivElement | null)[]>([]);
   const timelineRef = useRef<gsap.core.Timeline | null>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  const nextSlide = () => {
+  const nextSlide = useCallback(() => {
     setCurrentIndex((prev) => (prev + 1) % items.length);
-  };
+  }, [items.length]);
 
-  const prevSlide = () => {
+  const resetTimer = useCallback(() => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+    intervalRef.current = setInterval(nextSlide, autoScrollInterval);
+  }, [autoScrollInterval, nextSlide]);
+  const manualNextSlide = useCallback(() => {
+    nextSlide();
+    resetTimer();
+  }, [nextSlide, resetTimer]);
+
+  const manualPrevSlide = useCallback(() => {
     setCurrentIndex((prev) => (prev - 1 + items.length) % items.length);
-  };
+    resetTimer();
+  }, [items.length, resetTimer]);
 
   useEffect(() => {
-    const timer = setInterval(nextSlide, autoScrollInterval);
-    return () => clearInterval(timer);
-  }, [autoScrollInterval]);
+    resetTimer();
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [resetTimer]);
 
-  const getCardPosition = (index: number) => {
-    const prev = (currentIndex - 1 + items.length) % items.length;
-    const next = (currentIndex + 1) % items.length;
+  const getCardPosition = useCallback(
+    (index: number) => {
+      const prev = (currentIndex - 1 + items.length) % items.length;
+      const next = (currentIndex + 1) % items.length;
 
-    if (index === currentIndex) return "center";
-    if (index === prev) return "left";
-    if (index === next) return "right";
-    return "hidden";
-  };
+      if (index === currentIndex) return "center";
+      if (index === prev) return "left";
+      if (index === next) return "right";
+      return "hidden";
+    },
+    [currentIndex, items.length]
+  );
 
-  const getCardStyles = (position: string) => {
+  const getCardStyles = useCallback((position: string) => {
     switch (position) {
       case "center":
         return {
@@ -76,7 +96,7 @@ const CustomeSlider = (props: Props) => {
           zIndex: 0,
         };
     }
-  };
+  }, []);
 
   useEffect(() => {
     if (!isInitialized && cardsRef.current.length === items.length) {
@@ -92,15 +112,16 @@ const CustomeSlider = (props: Props) => {
 
         const position = getCardPosition(index);
         const styles = getCardStyles(position);
+
         gsap.set(card, {
           x: styles.x,
           width: styles.width,
           scale: 0.5,
           opacity: 0,
           zIndex: styles.zIndex,
+          force3D: true,
         });
 
-        // Animate in
         tl.to(
           card,
           {
@@ -118,7 +139,8 @@ const CustomeSlider = (props: Props) => {
       timelineRef.current = tl;
       setIsInitialized(true);
     }
-  }, [items.length, isInitialized]);
+  }, [items.length, isInitialized, getCardPosition, getCardStyles]);
+
   useEffect(() => {
     if (!isInitialized) return;
     if (timelineRef.current) {
@@ -131,20 +153,28 @@ const CustomeSlider = (props: Props) => {
 
       const position = getCardPosition(index);
       const styles = getCardStyles(position);
+
       gsap.to(card, {
         x: styles.x,
         width: styles.width,
         scale: styles.scale,
         opacity: styles.opacity,
         zIndex: styles.zIndex,
-        duration: 0.5,
-        ease: "power2.out",
+        duration: 0.6,
+        ease: "power2.inOut",
         overwrite: "auto",
+        force3D: true,
       });
 
       card.style.pointerEvents = position === "center" ? "auto" : "none";
     });
-  }, [currentIndex, items.length, isInitialized]);
+  }, [
+    currentIndex,
+    items.length,
+    isInitialized,
+    getCardPosition,
+    getCardStyles,
+  ]);
 
   useEffect(() => {
     return () => {
@@ -156,40 +186,36 @@ const CustomeSlider = (props: Props) => {
   }, []);
 
   return (
-    <div className="overflow-x-hidden  h-full my-2 flex flex-col items-center justify-center">
-      <AnimatePresence>
-        <div className="flex items-center justify-center">
-          <button className="border hover:border-cyan-600  shadow-2xl  my-5 px-5 py-2 rounded-4xl cursor-pointer">
-            Get more info of
+    <div className="overflow-x-hidden h-full my-2 flex flex-col items-center justify-center">
+      <div className="flex items-center justify-center min-h-[60px]">
+        <button
+          onClick={() => {
+            onClick(items[currentIndex], currentIndex);
+          }}
+          className="border hover:border-cyan-600 shadow-2xl my-5 px-5 py-2 rounded-full cursor-pointer inline-flex items-center gap-1"
+        >
+          <span>Get more info of</span>
+          <AnimatePresence mode="wait">
             <motion.span
               key={currentIndex}
-              initial={{
-                opacity: 0,
-
-              }}
-              animate={{
-                opacity: 1,
-
-              }}
-              exit={{
-                opacity: 0,
-
-              }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
               transition={{
-                duration: 0.5,
+                duration: 0.3,
                 ease: "easeInOut",
               }}
-              className="text-cyan-500"
+              className="text-cyan-500 overflow-hidden font-semibold inline-block"
             >
-              {" "}
               {items[currentIndex].name}
-            </motion.span>{" "}
-            using AI
-          </button>
-        </div>
-      </AnimatePresence>
+            </motion.span>
+          </AnimatePresence>
+          <span>using AI</span>
+        </button>
+      </div>
+
       <div className="w-full h-full flex-1">
-        <div className="flex w-full flex-wrap relative  h-[90%]">
+        <div className="flex w-full flex-wrap relative h-[90%]">
           {items.map((item, index) => (
             <div
               key={index}
@@ -197,6 +223,9 @@ const CustomeSlider = (props: Props) => {
               className="absolute h-full shadow-2xl will-change-transform"
               style={{
                 pointerEvents: "none",
+              }}
+              onClick={() => {
+                onClick(items[index], index);
               }}
             >
               <div className="relative h-full rounded-2xl overflow-hidden shadow-2xl">
@@ -216,16 +245,16 @@ const CustomeSlider = (props: Props) => {
           ))}
 
           <button
-            onClick={prevSlide}
-            className="absolute left-4 top-[50%] z-50 bg-black/20 hover:bg-black/30 backdrop-blur-sm text-white p-3 rounded-full transition-all"
+            onClick={manualPrevSlide}
+            className="absolute left-4 top-[50%] -translate-y-1/2 z-50 bg-black/20 hover:bg-black/30 backdrop-blur-sm text-white p-3 rounded-full transition-all duration-300 hover:scale-110"
             aria-label="Previous"
           >
             <ArrowBackOutlinedIcon />
           </button>
 
           <button
-            onClick={nextSlide}
-            className="absolute right-4 top-[50%] z-50 bg-black/20 hover:bg-black/30 backdrop-blur-sm text-white p-3 rounded-full transition-all"
+            onClick={manualNextSlide}
+            className="absolute right-4 top-[50%] -translate-y-1/2 z-50 bg-black/20 hover:bg-black/30 backdrop-blur-sm text-white p-3 rounded-full transition-all duration-300 hover:scale-110"
             aria-label="Next"
           >
             <ArrowForwardOutlinedIcon />

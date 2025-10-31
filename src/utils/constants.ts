@@ -55,3 +55,11 @@ export const guideCities = [
     image_url: ["/src/assets/images/chikmagaluru/1.jpg"],
   },
 ];
+
+
+export function capitalizeFirstLetter(str:string) {
+  if (!str) {
+    return ""; // Handle empty or null strings
+  }
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+}

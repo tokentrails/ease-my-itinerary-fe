@@ -248,7 +248,8 @@ const Login = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className=" border cursor-pointer font-semibold border-cyan-500 min-w-1/2 py-2 px-5 rounded-md bg-cyan-100"
+                className=" border cursor-pointer font-semibold min-w-1/2 py-2 px-5 rounded-md"
+                style={{ borderColor: '#2093EF', backgroundColor: '#eaf3ff' }}
               >
                 {isLoading ? (
                   <CircularProgress size={18} />
@@ -286,7 +287,8 @@ const Login = () => {
                   onClick={() => {
                     setIsRegister(true);
                   }}
-                  className="text-cyan-500 cursor-pointer"
+                  className="cursor-pointer"
+                  style={{ color: '#2093EF' }}
                 >
                   Sign Up
                 </span>

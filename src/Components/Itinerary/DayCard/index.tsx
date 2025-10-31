@@ -2,6 +2,7 @@ import moment from "moment";
 import type { DayPlan } from "../../../Helper/ApiResponseInterface";
 import getWeatherIcon from "../../../Helper/weatherIcons";
 import ActivityList from "./ActivityCard";
+import DriveEtaOutlinedIcon from "@mui/icons-material/DriveEtaOutlined";
 import { useEffect, useState } from "react";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
@@ -10,6 +11,8 @@ import KeyboardArrowDownOutlinedIcon from "@mui/icons-material/KeyboardArrowDown
 import TransportCard from "./TransportCard";
 import MealsCard from "./MealsCard";
 
+import ItinerarySkeleton from "../itinarySkeleton";
+
 interface Props {
   dayInfo: DayPlan;
   index: number;
@@ -17,113 +20,57 @@ interface Props {
 
 const DayCard = (props: Props) => {
   const { dayInfo, index } = props;
-  const [activeTab, setActiveTab] = useState("1");
-  const [open, setOpen] = useState(false);
-  useEffect(() => {
-    if (index == 0) {
-      setOpen(true);
-    }
-  }, [index]);
-  return (
-    <div className="min-w-[400px] relative bg-gray-100 border-2 border-cyan-500 transition-height  duration-700 shadow-lg px-5 rounded-xl py-4 my-5">
-      <div
-        onClick={() => {
-          setOpen(!open);
-        }}
-        className="py-2 sticky z-100 backdrop-blur-sm top-0 left-0"
-      >
-        <div className="flex justify-between items-center cursor-pointer">
+  const [openTab, setOpenTab] = useState(0);
+
+  return !dayInfo.day_number ? (
+    <ItinerarySkeleton day={index} />
+  ) : (
+    <div className="min-w-[400px] relative bg-white  transition-height  duration-700 shadow-lg px-5 rounded-xl py-4 my-5">
+      <div className="py-2 sticky z-100 backdrop-blur-sm top-0 left-0">
+        <div className="flex justify-between items-center cursor-pointer w-[90%]">
           <div>
-            <p className="font-semibold text-md">
-              Day {dayInfo.day_number} : {dayInfo.title}
-            </p>
+            <p className="font-semibold text-md">{dayInfo.title}</p>
             <p className="text-gray-500 text-sm">
               {moment(dayInfo.date).format("MMMM DD, YYYY")}
             </p>
           </div>
-          <div className="text-cyan-500 pr-10 text-right">
-            <div className="flex items-end justify-end">
-              {getWeatherIcon(dayInfo.weather.condition)}
-              <p className="text-cyan-500 ml-2">
-                Weather: {dayInfo.weather.min_temp.toFixed(2)}°C -{" "}
-                {dayInfo.weather.max_temp.toFixed(2)}
-                °C, {dayInfo.weather.condition}
-              </p>
-            </div>
-            <p className="text-[0.8rem] text-gray-500">
-              {dayInfo.weather.recommendation}
-            </p>
-          </div>
-        </div>
-
-        <div
-          className={`absolute cursor-pointer top-2 right-3 ${
-            open ? "rotate-180" : "rotate-0"
-          }`}
-        >
-          <KeyboardArrowDownOutlinedIcon />
         </div>
       </div>
       <div
-        className={`transition-max-height duration-400 ease-in-out overflow-hidden ${
-          open ? "max-h-[600vh]" : "max-h-0"
-        }`}
+        className={`transition-max-height duration-400 ease-in-out overflow-hidden `}
       >
-        <Tabs
-          value={activeTab}
-          onChange={(_, newValue) => {
-            setActiveTab(newValue);
-          }}
-          style={{
-            color: "#00b8db",
-          }}
-          sx={{
-            color: "#00b8db",
-            "& .MuiTabs-indicator": {
-              backgroundColor: "#00b8db",
-            },
+        {dayInfo.events.map((event, index) => {
+          return (
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 1 }}
+              transition={{
+                duration: 0.5,
+                delay: index == 0 ? 0.2 : index * 0.4,
+              }}
+              key={index}
+            >
+              {event.event_type == "activity" && (
+                <div className="flex   h-full">
 
-            "& .Mui-selected": {
-              color: "#00b8db",
-            },
-          }}
-          TabIndicatorProps={{
-            sx: {
-              backgroundColor: "#00b8db",
-            },
-          }}
-          className="text-cyan-300 mb-4 "
-        >
-          <Tab
-            label="🏃 Activity"
-            style={{
-              textTransform: "inherit",
-              fontSize: "16px",
-              color: "black",
-            }}
-            value="1"
-          />
-          <Tab
-            style={{
-              textTransform: "inherit",
-              fontSize: "16px",
-              color: "black",
-            }}
-            label="🚗 Transport"
-            value="2"
-          />
-          <Tab
-            style={{
-              textTransform: "inherit",
-              fontSize: "16px",
-              color: "black",
-            }}
-            label=" 🍽️ Meals"
-            value="3"
-          />
-          
-        </Tabs>
-        {activeTab == "1" &&
+                  <ActivityList activity={event} />
+                </div>
+              )}
+              {event.event_type == "transport" && (
+                <TransportCard
+                  index={index}
+                  transport={event}
+                  dayInfo={dayInfo}
+                  isLast={index == dayInfo.events.length - 1}
+                />
+              )}
+              {event.event_type == "meal" && (
+                <MealsCard index={index} meal={event} dayInfo={dayInfo} />
+              )}
+            </motion.div>
+          );
+        })}
+        {/* {activeTab == "1" &&
           dayInfo.activities.map((activity, index) => {
             return (
               <motion.div
@@ -181,8 +128,7 @@ const DayCard = (props: Props) => {
                 <MealsCard index={index} meal={meals} dayInfo={dayInfo} />
               </motion.div>
             );
-          })}
-          
+          })} */}
       </div>
     </div>
   );

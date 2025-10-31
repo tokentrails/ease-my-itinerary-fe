@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useFormik } from "formik";
 import moment from "moment";
-import React, { useEffect, useState } from "react";
+import React from "react";
 
 import { motion } from "motion/react";
 import PlaceAutocompleteInput from "../../customComponents/UseGoogleMapSearch";
@@ -13,186 +12,24 @@ import InputSelect from "../../customComponents/selectorComponent";
 import PeopleIcon from "@mui/icons-material/People";
 import InputComponent from "../../customComponents/inputComponent";
 import MoneyIcon from "@mui/icons-material/Money";
-import TempleBuddhistOutlinedIcon from "@mui/icons-material/TempleBuddhistOutlined";
-import AccountBalanceOutlinedIcon from "@mui/icons-material/AccountBalanceOutlined";
-import HikingOutlinedIcon from "@mui/icons-material/HikingOutlined";
-import FastfoodOutlinedIcon from "@mui/icons-material/FastfoodOutlined";
-import KitesurfingOutlinedIcon from "@mui/icons-material/KitesurfingOutlined";
-import PetsOutlinedIcon from "@mui/icons-material/PetsOutlined";
-import ColorLensOutlinedIcon from "@mui/icons-material/ColorLensOutlined";
-import ForestOutlinedIcon from "@mui/icons-material/ForestOutlined";
-import { useDispatch, useSelector } from "react-redux";
-import { addTrip } from "../../Store/itinerary-slice";
-import { useNavigate } from "react-router-dom";
-import { UsetInfo } from "../../Store/user-slice";
-import validationSchema from "./ItineraryFormValidation";
-interface TripFormValues {
-  budget: string;
-  days: string;
-  source: string;
-  destination: string;
-  interests: string[];
-  traveler_count: string;
-  end_date: string;
-  start_date: string;
-  travel_style: string;
-  meal_preference: string;
-  transport_mode: string[];
-  accommodationType: string[];
-  special_requests: string;
+
+interface ItineraryFormProps {
+  formik: any;
+  loading: boolean;
+  error: string;
+  interests: any[];
+  mealType: any[];
+  handleThemeToggle: (theme: string) => void;
 }
 
-const ItineraryForm: React.FC = () => {
-  const navigate = useNavigate();
-  const initialValues: TripFormValues = {
-    budget: "",
-    days: "",
-    destination: "",
-    interests: [],
-    source: "",
-    start_date: moment().format("YYYY-MM-DD"),
-    end_date: "",
-    traveler_count: "1",
-    travel_style: "mid-range",
-    transport_mode: ["bus", "train", "car", "bike", "flight", "any"],
-    meal_preference: "vegetarian",
-    special_requests: "",
-    accommodationType: ["hotel"],
-  };
-  const interests = [
-    {
-      id: "heritage",
-      name: "Heritage",
-      icon: <AccountBalanceOutlinedIcon />,
-      desc: "Historical monuments & culture",
-    },
-    {
-      id: "spiritual",
-      name: "Spiritual",
-      icon: <TempleBuddhistOutlinedIcon />,
-      desc: "Temples & pilgrimage",
-    },
-    {
-      id: "adventure",
-      name: "Adventure",
-      icon: <HikingOutlinedIcon />,
-      desc: "Trekking & outdoor activities",
-    },
-    {
-      id: "beach",
-      name: "Beach",
-      icon: <KitesurfingOutlinedIcon />,
-      desc: "Beaches & hill stations",
-    },
-    {
-      id: "food",
-      name: "Food",
-      icon: <FastfoodOutlinedIcon />,
-      desc: "Local cuisine & street food",
-    },
-    {
-      id: "wildlife",
-      name: "Wildlife",
-      icon: <PetsOutlinedIcon />,
-      desc: "National parks & safaris",
-    },
-    {
-      id: "culture",
-      name: "Culture",
-      icon: <ColorLensOutlinedIcon />,
-      desc: "Art, music & festivals",
-    },
-    {
-      id: "nature",
-      name: "Nature",
-      icon: <ForestOutlinedIcon />,
-      desc: "Mountains & natural beauty",
-    },
-  ];
-  const mealType = [
-    {
-      type: "vegan",
-      label: "vegan",
-      color: "cyan",
-    },
-    {
-      type: "vegetarian",
-      label: "Vegetarian",
-      color: "green",
-    },
-    {
-      type: "non-vegetarian",
-      label: "Non-Vegetarian ",
-      color: "red",
-    },
-  ];
-  const dispatch = useDispatch();
-  const [loading, setLoading] = useState(false);
-  const navigator = useNavigate();
-  const userInfo = useSelector(UsetInfo);
-  const [error, setError] = useState("");
-  useEffect(() => {
-    if (userInfo.id.length == 0) {
-      navigator("/Login");
-    }
-  }, [userInfo]);
-  const formik = useFormik({
-    initialValues: initialValues,
-    validationSchema: validationSchema,
-    onSubmit: async (values) => {
-      setLoading(true);
-      const myHeaders = new Headers();
-      myHeaders.append("Content-Type", "application/json");
-
-      const payLoad: any = JSON.parse(JSON.stringify(values));
-      payLoad.budget = Number(payLoad.budget);
-      payLoad.traveler_count = Number(payLoad.traveler_count);
-      //dispatch(addTrip({...Data_Dummy}))
-      setError("");
-      await fetch(
-        "https://ai-trip-planner-backend-703138722646.us-central1.run.app/api/v1/trips/generate",
-        {
-          method: "POST",
-          headers: myHeaders,
-          body: JSON.stringify({ ...payLoad }),
-        }
-      )
-        .then(async (resp) => {
-          setLoading(false);
-          const data = await resp.json();
-
-          if (data?.data?.trip) {
-            window.scrollTo({
-              top: 0,
-              left: 0,
-              behavior: "smooth",
-            });
-            navigate("/Itinerary/" + data.data.trip.id);
-            dispatch(addTrip({ ...data.data.trip }));
-          } else if (data.error.message) {
-            setError(data.error.message || "No Data Found");
-          } else {
-            setError("No Data Found");
-          }
-        })
-        .catch((error) => {
-          setLoading(false);
-          setError("Please Try again later!");
-          console.log(error);
-        });
-    },
-  });
-  const handleThemeToggle = (interests: string) => {
-    const currentThemes = formik.values.interests || [];
-    let updatedThemes;
-    if (currentThemes.includes(interests)) {
-      updatedThemes = currentThemes.filter((t) => t !== interests);
-    } else {
-      updatedThemes = [...currentThemes, interests];
-    }
-    formik.setFieldValue("interests", updatedThemes);
-  };
-
+const ItineraryForm: React.FC<ItineraryFormProps> = ({
+  formik,
+  loading,
+  error,
+  interests,
+  mealType,
+  handleThemeToggle,
+}) => {
   return (
     <motion.div
       initial={{
@@ -226,7 +63,7 @@ const ItineraryForm: React.FC = () => {
             }}
             className="flex justify-between flex-wrap"
           >
-            <div className="sm:w-full lg:w-[48%]">
+            <div className="w-full md:w-[48%]">
               <PlaceAutocompleteInput
                 Icon={<FlightTakeoffIcon sx={{ fontSize: "24px" }} />}
                 title={"Source"}
@@ -237,7 +74,7 @@ const ItineraryForm: React.FC = () => {
                 }}
               />
             </div>
-            <div className="sm:w-full lg:w-[48%]">
+            <div className="w-full md:w-[48%]">
               <PlaceAutocompleteInput
                 Icon={<FlightLandIcon sx={{ fontSize: "24px" }} />}
                 title={"Destination"}
@@ -251,7 +88,7 @@ const ItineraryForm: React.FC = () => {
               />
             </div>
             <div className="flex w-full flex-wrap items-center justify-between">
-              <div className="sm:w-full lg:w-[48%] ">
+              <div className="w-full md:w-[48%]">
                 <DateComponent
                   Icon={<CalendarMonthIcon sx={{ fontSize: "24px" }} />}
                   title={"From Date"}
@@ -265,7 +102,7 @@ const ItineraryForm: React.FC = () => {
                   value={formik.values.start_date}
                 />
               </div>
-              <div className="sm:w-full lg:w-[48%] ">
+              <div className="w-full md:w-[48%]">
                 <DateComponent
                   Icon={<CalendarMonthIcon sx={{ fontSize: "24px" }} />}
                   title={"To Date"}
@@ -285,7 +122,7 @@ const ItineraryForm: React.FC = () => {
                 />
               </div>
               <div className="flex w-full mt-5 flex-wrap items-center justify-between">
-                <div className="sm:w-full lg:w-[48%] ">
+                <div className="w-full md:w-[48%] lg:w-[48%] ">
                   <InputComponent
                     Icon={<MoneyIcon sx={{ fontSize: "24px" }} />}
                     title={"What's your budget?"}
@@ -302,7 +139,7 @@ const ItineraryForm: React.FC = () => {
                     placeHolder={"What is your budget?"}
                   />
                 </div>
-                <div className="sm:w-full lg:w-[48%] ">
+                <div className="w-full md:w-[48%] lg:w-[48%] ">
                   <InputSelect
                     Icon={<PeopleIcon sx={{ fontSize: "24px" }} />}
                     title={"Number of Travelers"}
@@ -329,9 +166,10 @@ const ItineraryForm: React.FC = () => {
                   />
                 </div>
               </div>
-              <div className=" w-full">
+              </div>
+               <div className=" w-full">
                 <p className="text-md font-semibold  text-gray-800">Intrest</p>
-                <div className="flex flex-wrap my-5 w-[100%]  justify-around items-center">
+                <div className="grid grid-cols-3 md:flex md:flex-wrap md:items-center md:justify-around my-5 w-[100%]   items-center">
                   {interests.map((item, index) => {
                     return (
                       <motion.div
@@ -352,9 +190,11 @@ const ItineraryForm: React.FC = () => {
                           e.stopPropagation();
                           handleThemeToggle(item.name as string);
                         }}
-                        className={`px-6 py-1 w-[90px] h-[80px] flex items-center flex-col justify-center rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer ${
+                        className={`px-6 py-1 w-[90px] mx-2 h-[80px] my-2 flex items-center flex-col justify-center rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer ${
                           formik.values.interests.includes(item.name as string)
                             ? "bg-cyan-100 text-black-900 border-2 border-cyan-300"
+                              ? "text-black-900"
+                              : "bg-gray-100 text-gray-500 border-gray-200 border-2  hover:bg-gray-00"
                             : "bg-gray-100 text-gray-500 border-gray-200 border-2  hover:bg-gray-00"
                         }`}
                       >
@@ -365,12 +205,12 @@ const ItineraryForm: React.FC = () => {
                   })}
                 </div>
               </div>
-            </div>
-            <div className=" w-full">
+
+           <div className=" w-full">
               <p className="text-md font-semibold  text-gray-800">
                 Preferred Meal
               </p>
-              <div className="flex flex-wrap  my-5 w-[100%]  justify-start items-center">
+              <div className="flex flex-col md:flex-row   my-5 w-[100%] items-start">
                 {mealType.map((item, index) => {
                   return (
                     <motion.div
@@ -392,9 +232,11 @@ const ItineraryForm: React.FC = () => {
 
                         formik.setFieldValue("meal_preference", item.type);
                       }}
-                      className={`px-6 py-1 mx-5  h-[60px] flex items-center flex-col justify-center rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer ${
+                      className={`px-6 py-1 mx-5  my-2 h-[60px] flex items-center flex-col justify-center rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer ${
                         formik.values.meal_preference == item.type
                           ? "bg-cyan-100 text-black-900 border-2 border-cyan-300"
+                            ? "text-black-900"
+                            : "bg-gray-100 text-gray-500 border-gray-200 border-2  hover:bg-gray-00"
                           : "bg-gray-100 text-gray-500 border-gray-200 border-2  hover:bg-gray-00"
                       }`}
                     >
@@ -415,6 +257,8 @@ const ItineraryForm: React.FC = () => {
                 type="submit"
                 disabled={loading}
                 className="w-full relative cursor-pointer bg-cyan-700 hover:bg-cyan-500 text-white font-semibold py-4 px-6 rounded-xl transition-colors duration-200 text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                  className="w-full relative cursor-pointer text-white font-semibold py-4 px-6 rounded-xl transition-colors duration-200 text-lg shadow-lg"
+                  style={{ backgroundColor: '#2093EF' }}
               >
                 {loading ? (
                   <div className="flex items-center justify-center space-x-3">
@@ -453,28 +297,26 @@ const ItineraryForm: React.FC = () => {
                   "Create My Itinerary"
                 )}
                 {loading && (
-                  <div className="absolute inset-0 bg-gradient-to-r from-cyan-400/20 to-blue-500/20 animate-pulse"></div>
+              <div className="absolute inset-0 animate-pulse" style={{ background: 'linear-gradient(90deg, rgba(32,147,239,0.06), rgba(32,147,239,0.03) 50%, rgba(32,147,239,0.06))' }}></div>
                 )}
               </button>
               {loading && (
-                <div className="mt-4 text-center">
-                  <div className="bg-cyan-50 border border-cyan-200 rounded-lg p-3 text-sm text-cyan-800">
-                    <div className="flex items-center justify-center space-x-2 mb-2">
-                      <div className="w-3 h-3 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin"></div>
-                      <span className="font-semibold">
-                        Crafting Your Perfect Journey
-                      </span>
-                    </div>
-                    <div className="text-xs">
-                      <div>✓ Analyzing your preferences</div>
-                      <div>✓ Finding best destinations</div>
-                      <div className="flex items-center space-x-1">
-                        <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
-                        <span>Creating personalized itinerary...</span>
+                  <div className="mt-4 text-center">
+                    <div className="rounded-lg p-3 text-sm" style={{ backgroundColor: '#eaf3ff', border: '1px solid rgba(32,147,239,0.12)', color: '#0f172a' }}>
+                      <div className="flex items-center justify-center space-x-2 mb-2">
+                        <div className="w-3 h-3 border-2 border-transparent border-t-transparent rounded-full animate-spin" style={{ borderColor: 'rgba(32,147,239,0.3)' }}></div>
+                        <span className="font-semibold">Crafting Your Perfect Journey</span>
+                      </div>
+                      <div className="text-xs">
+                        <div>✓ Analyzing your preferences</div>
+                        <div>✓ Finding best destinations</div>
+                        <div className="flex items-center space-x-1">
+                          <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: '#ef6614' }}></div>
+                          <span>Creating personalized itinerary...</span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
               )}
             </div>
           </form>

@@ -26,13 +26,13 @@ const ItimeraryBreakDown = (props: Props) => {
         className="flex items-center justify-between w-full" 
       >
       <div className="flex items-center">
-          <HandCoins size={24} className="text-cyan-500" />
+          <HandCoins size={24} color="#2093EF" />
            <p className="font-semibold ml-1 text-left">Budget & Cost Breakdown</p>
         </div>
        
        <div className="flex items-center">
         <div className="flex flex-row-reverse items-center">
-          <p className="ml-2 text-cyan-500 font-bold text-xl">
+          <p className="ml-2 font-bold text-xl" style={{ color: '#2093EF' }}>
           ₹{trip.total_cost.toFixed(2).toLocaleString()}
         </p>
         
@@ -54,11 +54,12 @@ const ItimeraryBreakDown = (props: Props) => {
        </div>
        
       </button>
-      <div className="w-full h-[15px] mt-3 overflow-hidden rounded-xl bg-gray-300 ">
+        <div className="w-full h-[15px] mt-3 overflow-hidden rounded-xl bg-gray-300 ">
         <div
           className={`h-full w-[${
             (trip.total_cost / trip.budget) * 100
-          }%] bg-cyan-500`}
+          }%]`}
+          style={{ backgroundColor: '#2093EF' }}
         />
       </div>
       

@@ -36,7 +36,7 @@ const TextAreaComponent = (props: Props) => {
   return (
     <div className={`w-[${width}]`}>
       <div className="flex items-center space-x-2 my-2 justify-start">
-        <div className="text-cyan-500 mr-2">{Icon && Icon}</div>
+        <div style={{ color: '#2093EF' }} className="mr-2">{Icon && Icon}</div>
         <p
           className="text-lg font-semibold text-gray-800"
           style={titleStyle && titleStyle}

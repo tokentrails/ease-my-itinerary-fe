@@ -42,7 +42,7 @@ const Summary = (props: Props) => {
           </div>
         </div>
         <div className="space-y-4">
-          <button className="text-white text-xl font-semibold w-full p-2 my-4 rounded-sm bg-cyan-500">
+          <button className="text-white text-xl font-semibold w-full p-2 my-4 rounded-sm" style={{ backgroundColor: '#2093EF' }}>
             Book Now
           </button>
         </div>

@@ -11,9 +11,9 @@ import { motion } from "motion/react";
 import CircularProgress from "@mui/material/CircularProgress";
 import Login from "./Pages/Login";
 import { Flip, ToastContainer } from "react-toastify";
-import ItineraryInfo from "./Components/Itinerary/itineraryInfo";
 import refreshToken from "./utils/refreshLogin";
 import { useDispatch } from "react-redux";
+import DestinationPage from "./Pages/Destination";
 function App() {
   const apiKey: string = process.env.REACT_APP_GOOGLE_API || "";
   const dispatch = useDispatch()
@@ -68,7 +68,7 @@ function App() {
               <Route path="/" element={<HomePage />} />
               <Route path="/Login" element={<Login />} />
               <Route path="/Itinerary" element={<Itinerary />} />
-                  <Route path="/Itinerary/:id" element={<ItineraryInfo />} />
+              <Route path="/Destination" element={<DestinationPage />} />
               <Route path="/profile" element={<ProfilePage />} />
             </Routes>
           </BrowserRouter>

@@ -17,14 +17,14 @@ const AccommodationCard = (props: Props) => {
     >
       <div className="space-y-4">
         <div className="flex items-center gap-4 p-4  rounded-lg">
-          <Home className="w-8 h-8 text-cyan-600" />
+          <Home className="w-8 h-8" color="#2093EF" />
           <div className="flex-1">
             <h4 className="font-semibold text-gray-900">
               {accommodation.name}
             </h4>
             <p className="text-gray-600">{accommodation.type}</p>
-            <div className="flex items-center gap-2 mt-1">
-              <Star className="w-4 h-4 text-yellow-400 fill-current" />
+              <div className="flex items-center gap-2 mt-1">
+              <Star className="w-4 h-4" color="#ef6614" />
               <span className="text-sm font-medium">
                 {accommodation.rating} (
                 {accommodation.review_count.toLocaleString()} reviews)
@@ -44,7 +44,7 @@ const AccommodationCard = (props: Props) => {
           </div>
         </div>
 
-        <div className="bg-cyan-50 rounded-lg p-4 border border-cyan-200">
+        <div className="rounded-lg p-4" style={{ backgroundColor: '#eaf3ff', border: '1px solid rgba(32,147,239,0.12)' }}>
           <h5 className="font-medium text-gray-900 mb-3">Property Details</h5>
           <p className="text-sm text-gray-700 mb-3">
             {accommodation.description}
@@ -53,7 +53,7 @@ const AccommodationCard = (props: Props) => {
             {accommodation.amenities.map((amenities) => {
               return (
                 <div className="flex items-center gap-1">
-                  <div className="w-2 h-2 bg-cyan-400 rounded-full"></div>
+                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#2093EF' }}></div>
                   <span className="text-gray-600">{amenities}</span>
                 </div>
               );
