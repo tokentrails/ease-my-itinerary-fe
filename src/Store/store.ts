@@ -1,11 +1,13 @@
 import { configureStore } from '@reduxjs/toolkit'
 import userSlice from './user-slice'
 import itinerart from "./itinerary-slice"
+import formSlice from "./form-slice"
+
 export const store = configureStore({
   reducer: {
     user: userSlice,
-    itinerary:itinerart
-
+    itinerary: itinerart,
+    form: formSlice,
   },
 })
 

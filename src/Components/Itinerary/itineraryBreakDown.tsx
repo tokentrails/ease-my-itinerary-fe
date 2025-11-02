@@ -1,93 +1,124 @@
 import { useState } from "react";
 import type { BudgetBreakdown, Trip } from "../../Helper/ApiResponseInterface";
-import KeyboardArrowDownOutlinedIcon from "@mui/icons-material/KeyboardArrowDownOutlined";
-import { HandCoins } from "lucide-react";
+import {  ChevronDown } from "lucide-react";
+import { motion } from "motion/react";
 
 interface Props {
   trip: Trip;
   breakDown: BudgetBreakdown;
 }
+
+
 const ItimeraryBreakDown = (props: Props) => {
   const [open, setOpen] = useState(true);
   const { breakDown, trip } = props;
-  return (
-    <div
-      className="overflow-hidden w-full transition-height bg-gray-100  duration-700 shadow-lg px-5 rounded-xl py-4 my-5"
-      style={{
-        transition:"all 0.5s ease-in-out",
-        maxWidth:"100%",
-        minWidth:"300px"
-      }}
-    >
-      <button
-        onClick={() => {
-          setOpen(!open);
-        }}
-        className="flex items-center justify-between w-full" 
-      >
-      <div className="flex items-center">
-          <HandCoins size={24} color="#2093EF" />
-           <p className="font-semibold ml-1 text-left">Budget & Cost Breakdown</p>
-        </div>
-       
-       <div className="flex items-center">
-        <div className="flex flex-row-reverse items-center">
-          <p className="ml-2 font-bold text-xl" style={{ color: '#2093EF' }}>
-          ₹{trip.total_cost.toFixed(2).toLocaleString()}
-        </p>
-        
-           {trip.saved && trip.saved>0 && <span className="text-sm mt-1 text-green-700 text-black-400">₹{trip.saved.toFixed(2).toLocaleString()} saved </span>}
-        </div>
-         
-        <button
-          onClick={() => {
-            setOpen(!open);
-          }}
-        >
-          <KeyboardArrowDownOutlinedIcon
-             className={`w-6 h-6 text-gray-500 transition-transform duration-300 ease-in-out ${
-              open ? "rotate-180" : "rotate-0"
-            }`}
-          />
-        </button>
-        
-       </div>
-       
-      </button>
-        <div className="w-full h-[15px] mt-3 overflow-hidden rounded-xl bg-gray-300 ">
-        <div
-          className={`h-full w-[${
-            (trip.total_cost / trip.budget) * 100
-          }%]`}
-          style={{ backgroundColor: '#2093EF' }}
-        />
-      </div>
-      
-        <div  className={`transition-max-height duration-400 ease-in-out overflow-hidden ${
-          open ? "max-h-[40rem]" : "max-h-0"
-        }`}>
-          <div className="flex my-2 mt-5  items-center justify-between px-4">
-            <p>Accommodation</p>
-            <p>₹{breakDown.accommodation.toFixed(2).toLocaleString()}</p>
-          </div>
-          <div className="flex my-2  items-center justify-between px-4">
-            <p>Transport</p>
-            <p>₹{breakDown.transport.toFixed(2).toLocaleString()}</p>
-          </div>
-          <div className="flex my-2  items-center justify-between px-4">
-            <p>Activities</p>
-            <p>₹{breakDown.activities.toFixed(2).toLocaleString()}</p>
-          </div>
-          <div className="flex my-2  items-center justify-between px-4">
-            <p>Meals</p>
-            <p>₹{breakDown.meals.toFixed(2).toLocaleString()}</p>
-          </div>
-          <div className="flex my-2 items-center justify-between px-4">
-            <p>Miscellaneous</p>
-            <p>₹{breakDown.miscellaneous.toFixed(2).toLocaleString()}</p>
-          </div>
-        </div>
+  const budgetPercentage = (trip.total_cost / trip.budget) * 100;
 
+  return (
+    <div className="flex relative w-full cursor-pointer">
+      <div className="w-full ">
+        <div
+          className="w-full rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
+          onClick={() => setOpen(!open)}
+        >
+          {/* Header */}
+          <div className="p-4 flex items-center justify-between">
+            <div className="flex-1">
+              <h3 style={{ color: "#2093EF" }} className="font-semibold">
+                Budget & Cost Breakdown
+              </h3>
+              <div className="flex items-center gap-4 mt-2">
+                <div>
+                  <p className="text-xs text-gray-500">Total Cost</p>
+                  <p className="font-bold text-lg" style={{ color: "#2093EF" }}>
+                    ₹{trip.total_cost.toFixed(2).toLocaleString()}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500">Budget</p>
+                  <p className="font-semibold">
+                    ₹{trip.budget.toLocaleString()}
+                  </p>
+                </div>
+                {trip.saved && trip.saved > 0 && (
+                  <div className="bg-green-50 px-3 py-1 rounded-full">
+                    <p className="text-sm font-semibold text-green-700">
+                      ₹{trip.saved.toFixed(2).toLocaleString()} saved
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+            <motion.button
+              animate={{ rotate: open ? 180 : 0 }}
+              transition={{ duration: 0.3 }}
+              className="ml-2 flex-shrink-0"
+            >
+              <ChevronDown className="w-5 h-5 text-gray-500" />
+            </motion.button>
+          </div>
+
+          {/* Progress Bar */}
+          <div className="px-4 pb-3">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs text-gray-500">Budget Usage</p>
+              <p className="text-sm font-semibold" style={{ color: "#2093EF" }}>
+                {Math.round(budgetPercentage)}%
+              </p>
+            </div>
+            <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${Math.min(budgetPercentage, 100)}%` }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
+                className="h-full rounded-full"
+                style={{ backgroundColor: "#2093EF" }}
+              />
+            </div>
+          </div>
+
+          {/* Expandable Details */}
+          <motion.div
+            initial={false}
+            animate={{ height: open ? "auto" : 0 }}
+            transition={{ duration: 0.3 }}
+            className="overflow-hidden border-t border-gray-100"
+          >
+            <div className="p-4 space-y-3">
+              <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+                <p className="text-gray-600 font-medium">Accommodation</p>
+                <p className="font-semibold">
+                  ₹{breakDown.accommodation.toFixed(2).toLocaleString()}
+                </p>
+              </div>
+              <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+                <p className="text-gray-600 font-medium">Transport</p>
+                <p className="font-semibold">
+                  ₹{breakDown.transport.toFixed(2).toLocaleString()}
+                </p>
+              </div>
+              <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+                <p className="text-gray-600 font-medium">Activities</p>
+                <p className="font-semibold">
+                  ₹{breakDown.activities.toFixed(2).toLocaleString()}
+                </p>
+              </div>
+              <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+                <p className="text-gray-600 font-medium">Meals</p>
+                <p className="font-semibold">
+                  ₹{breakDown.meals.toFixed(2).toLocaleString()}
+                </p>
+              </div>
+              <div className="flex items-center justify-between pt-2">
+                <p className="text-gray-600 font-medium">Miscellaneous</p>
+                <p className="font-semibold">
+                  ₹{breakDown.miscellaneous.toFixed(2).toLocaleString()}
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </div>
     </div>
   );
 };

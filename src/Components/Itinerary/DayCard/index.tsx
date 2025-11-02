@@ -1,13 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import moment from "moment";
 import type { DayPlan } from "../../../Helper/ApiResponseInterface";
-import getWeatherIcon from "../../../Helper/weatherIcons";
 import ActivityList from "./ActivityCard";
-import DriveEtaOutlinedIcon from "@mui/icons-material/DriveEtaOutlined";
-import { useEffect, useState } from "react";
-import Tabs from "@mui/material/Tabs";
-import Tab from "@mui/material/Tab";
+
 import { motion } from "motion/react";
-import KeyboardArrowDownOutlinedIcon from "@mui/icons-material/KeyboardArrowDownOutlined";
+
 import TransportCard from "./TransportCard";
 import MealsCard from "./MealsCard";
 
@@ -20,12 +17,11 @@ interface Props {
 
 const DayCard = (props: Props) => {
   const { dayInfo, index } = props;
-  const [openTab, setOpenTab] = useState(0);
 
-  return !dayInfo.day_number ? (
+  return (!dayInfo || !dayInfo.day_number || dayInfo == undefined) ? (
     <ItinerarySkeleton day={index} />
   ) : (
-    <div className="min-w-[400px] relative bg-white  transition-height  duration-700 shadow-lg px-5 rounded-xl py-4 my-5">
+    <div className=" relative bg-white  transition-height  duration-700   rounded-xl py-4 mb-5">
       <div className="py-2 sticky z-100 backdrop-blur-sm top-0 left-0">
         <div className="flex justify-between items-center cursor-pointer w-[90%]">
           <div>
@@ -39,7 +35,7 @@ const DayCard = (props: Props) => {
       <div
         className={`transition-max-height duration-400 ease-in-out overflow-hidden `}
       >
-        {dayInfo.events.map((event, index) => {
+        {dayInfo.events.map((event:any, index:number) => {
           return (
             <motion.div
               initial={{ opacity: 0, y: 50 }}

@@ -4,7 +4,6 @@ import HomePage from "./Pages/HomePage";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import ProfilePage from "./Pages/Profile";
 
-import Itinerary from "./Components/Itinerary/main";
 import { APIProvider } from "@vis.gl/react-google-maps";
 import { useEffect, useState } from "react";
 import { motion } from "motion/react";
@@ -14,13 +13,15 @@ import { Flip, ToastContainer } from "react-toastify";
 import refreshToken from "./utils/refreshLogin";
 import { useDispatch } from "react-redux";
 import DestinationPage from "./Pages/Destination";
+import ItineraryInfo from "./Components/Itinerary/itineraryInfo";
+import ConfirmBooking from "./Pages/ConfirmBooking";
 function App() {
   const apiKey: string = process.env.REACT_APP_GOOGLE_API || "";
   const dispatch = useDispatch()
   const [loading, setLoading] = useState(true);
   useEffect(()=>{
      refreshToken(dispatch)
-  },[])
+  },[dispatch])
   return (
     <APIProvider
       apiKey={apiKey}
@@ -66,10 +67,11 @@ function App() {
             <Header />
             <Routes>
               <Route path="/" element={<HomePage />} />
-              <Route path="/Login" element={<Login />} />
-              <Route path="/Itinerary" element={<Itinerary />} />
-              <Route path="/Destination" element={<DestinationPage />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/itinerary" element={<ItineraryInfo />} />
+              <Route path="/destination" element={<DestinationPage />} />
               <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/confirm-booking" element={<ConfirmBooking />} />
             </Routes>
           </BrowserRouter>
         </motion.div>

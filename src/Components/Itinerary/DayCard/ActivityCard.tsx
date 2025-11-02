@@ -1,9 +1,10 @@
-import type { Event } from "../../../../Helper/ApiResponseInterface";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import moment from "moment";
-import { Star, MapPin, Truck, Bed,FerrisWheel, ShoppingBag, Activity as LucideActivity, Utensils } from "lucide-react";
+import { Star,FerrisWheel } from "lucide-react";
 import { useState } from "react";
 interface ActivityProps {
-  activity: Event;
+  activity: any;
 }
 // replaced MUI icons with lucide-react equivalents
 import { motion } from "motion/react";
@@ -40,12 +41,13 @@ const ActivityList = (props: ActivityProps) => {
         initial={false}
         // Use a sufficiently large value for expanded state
         transition={{ duration: 0.3, ease: "easeInOut" }}
-        className="p-3 my-5 w-full rounded-xl overflow-hidden"
+        className="p-3 my-5 w-full   rounded-xl overflow-hidden"
       >
         <div className="w-full ">
           <div className="flex flex-col md:flex-row md:justify-between w-full">
             <div>
               <p style={{ color: '#2093EF' }}>{activity.activity.name}</p>
+              <p className="text-sm text-gray-500">{activity.activity.location.city}</p>
               <p className=" text-sm text-gray-500">
                 {moment(activity.start_time, "HH:mm").format("hh:mm a")} -{" "}
                 {moment(activity.end_time, "HH:mm").format("hh:mm a")}

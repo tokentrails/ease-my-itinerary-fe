@@ -98,7 +98,7 @@ const Login = () => {
             window.localStorage.setItem("userInfo",JSON.stringify(resp.data.user))
             window.localStorage.setItem("auth",resp.data.access_token)
             window.localStorage.setItem("refresh",resp.data.refresh_token)
-            navigate("/Itinerary");
+            navigate("/");
           }
 
           showToast("Login successful.", "success");

@@ -55,11 +55,21 @@ export const streamApiCaller = async (
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({
-      message: 'An unknown error occurred.',
+      error: {
+        message: 'An unknown error occurred.',
+      },
     }));
-    throw new Error(
-      `API Error: ${response.status} ${response.statusText} - ${errorData.message || 'Unknown error'}`
-    );
+    console.log(errorData, "errorData");
+    
+    // Send error through the callback instead of throwing
+    if (onStreamData) {
+      onStreamData({
+        error: errorData.error || {
+          message: errorData.message || 'An unknown error occurred.',
+        },
+      });
+    }
+    return;
   }
 
   if (!response.body) {

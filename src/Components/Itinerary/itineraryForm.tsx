@@ -42,19 +42,39 @@ const ItineraryForm: React.FC<ItineraryFormProps> = ({
         duration: 0.5,
         ease: "easeInOut",
       }}
-      className="min-h-screen bg-gray-50 flex justify-center p-5"
+      className="min-h-screen bg-white flex justify-center p-5"
+     
     >
-      <div className="sm:w-[90%] rounded-2xl p-2 lg:w-[70%] ">
-        <div>
-          <p className="font-semibold my-5 text-3xl text-center">
-            Plan your next adventure
+      <div className="sm:w-[90%] rounded-2xl p-2 lg:w-[70%]">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="mb-8"
+        >
+         
+          <p className="font-bold my-4 text-4xl text-center text-gray-900">
+            AI-Powered Travel Planning
           </p>
-          <p className="text-center text-md">
-            Create a personalized itinerary{" "}
+          <p className="text-center text-lg text-gray-600">
+            Let our AI create your perfect itinerary in seconds
           </p>
-        </div>
+          <div className="flex justify-center gap-2 mt-4 flex-wrap">
+            <div className=" py-2 rounded-full   text-sm text-blue-700 font-medium">
+               Personalized
+            </div>
+               <div className=" px-4 py-2 rounded-full   text-sm  font-medium">
+               &
+            </div>
+            <div className="  py-2 rounded-full  border-blue-200 text-sm text-blue-700 font-medium">
+               Smart
+            </div>
+            
+          </div>
+        </motion.div>
 
-        <div className="my-4 mt-20">
+        <div className="my-4 mt-8">
+          
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -168,7 +188,7 @@ const ItineraryForm: React.FC<ItineraryFormProps> = ({
               </div>
               </div>
                <div className=" w-full">
-                <p className="text-md font-semibold  text-gray-800">Intrest</p>
+                <p className="text-md font-semibold  text-gray-800">Interests</p>
                 <div className="grid grid-cols-3 md:flex md:flex-wrap md:items-center md:justify-around my-5 w-[100%]   items-center">
                   {interests.map((item, index) => {
                     return (
@@ -190,13 +210,16 @@ const ItineraryForm: React.FC<ItineraryFormProps> = ({
                           e.stopPropagation();
                           handleThemeToggle(item.name as string);
                         }}
-                        className={`px-6 py-1 w-[90px] mx-2 h-[80px] my-2 flex items-center flex-col justify-center rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer ${
+                        className={`px-6 py-1 w-[90px] mx-2 h-[80px] my-2 flex items-center flex-col justify-center rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer border-2 ${
                           formik.values.interests.includes(item.name as string)
-                            ? "bg-cyan-100 text-black-900 border-2 border-cyan-300"
-                              ? "text-black-900"
-                              : "bg-gray-100 text-gray-500 border-gray-200 border-2  hover:bg-gray-00"
-                            : "bg-gray-100 text-gray-500 border-gray-200 border-2  hover:bg-gray-00"
+                            ? "border-2 text-white"
+                            : "bg-gray-100 text-gray-500 border-gray-200 border-2  hover:bg-gray-50"
                         }`}
+                        style={
+                          formik.values.interests.includes(item.name as string)
+                            ? { backgroundColor: "#2093EF", borderColor: "#2093EF" }
+                            : {}
+                        }
                       >
                         {item.icon}
                         {item.name}
@@ -232,13 +255,16 @@ const ItineraryForm: React.FC<ItineraryFormProps> = ({
 
                         formik.setFieldValue("meal_preference", item.type);
                       }}
-                      className={`px-6 py-1 mx-5  my-2 h-[60px] flex items-center flex-col justify-center rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer ${
+                      className={`px-6 py-1 mx-5  my-2 h-[60px] flex items-center flex-col justify-center rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer border-2 ${
                         formik.values.meal_preference == item.type
-                          ? "bg-cyan-100 text-black-900 border-2 border-cyan-300"
-                            ? "text-black-900"
-                            : "bg-gray-100 text-gray-500 border-gray-200 border-2  hover:bg-gray-00"
-                          : "bg-gray-100 text-gray-500 border-gray-200 border-2  hover:bg-gray-00"
+                          ? "text-white border-2"
+                          : "bg-gray-100 text-gray-500 border-gray-200 border-2  hover:bg-gray-50"
                       }`}
+                      style={
+                        formik.values.meal_preference == item.type
+                          ? { backgroundColor: "#2093EF", borderColor: "#2093EF" }
+                          : {}
+                      }
                     >
                       {item.label}
                     </motion.div>
@@ -248,75 +274,96 @@ const ItineraryForm: React.FC<ItineraryFormProps> = ({
             </div>
             <div className="pt-6 w-full">
               {error && error.length > 0 && (
-                <p className="text-md text-center text-red-400 font-semibold">
-                  {" "}
-                  {error}
-                </p>
+                <div className="mb-4 p-4 bg-red-50 rounded-lg border border-red-200">
+                  <p className="text-sm text-red-700 font-semibold">
+                    ⚠️ {error}
+                  </p>
+                </div>
               )}
-              <button
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 type="submit"
                 disabled={loading}
-                className="w-full relative cursor-pointer bg-cyan-700 hover:bg-cyan-500 text-white font-semibold py-4 px-6 rounded-xl transition-colors duration-200 text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                  className="w-full relative cursor-pointer text-white font-semibold py-4 px-6 rounded-xl transition-colors duration-200 text-lg shadow-lg"
-                  style={{ backgroundColor: '#2093EF' }}
+                className="w-full relative cursor-pointer text-white font-bold py-4 px-6 rounded-xl transition-all duration-200 text-lg shadow-lg hover:shadow-2xl transform hover:-translate-y-1 disabled:opacity-75 disabled:cursor-not-allowed"
+                style={{ backgroundColor: "#2093EF" }}
               >
                 {loading ? (
                   <div className="flex items-center justify-center space-x-3">
                     <div className="relative">
                       <div className="w-8 h-8 relative">
                         <div className="absolute inset-0 border-2 border-white/60 rounded-full animate-pulse"></div>
-                        <div
-                          className="absolute top-1 left-2 w-1 h-1 bg-white rounded-full animate-ping"
-                          style={{ animationDelay: "0s" }}
-                        ></div>
-                        <div
-                          className="absolute top-3 right-1 w-1 h-1 bg-white rounded-full animate-ping"
-                          style={{ animationDelay: "0.3s" }}
-                        ></div>
-                        <div
-                          className="absolute bottom-2 left-1 w-1 h-1 bg-white rounded-full animate-ping"
-                          style={{ animationDelay: "0.6s" }}
-                        ></div>
-                        <div
-                          className="absolute bottom-1 right-2 w-1 h-1 bg-white rounded-full animate-ping"
-                          style={{ animationDelay: "0.9s" }}
-                        ></div>
-                        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-white/80 rounded-full animate-bounce"></div>
+                        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-white rounded-full animate-bounce"></div>
                       </div>
                     </div>
                     <div className="flex flex-col items-start">
-                      <span className="text-base font-bold">
-                        AI is planning your trip...
-                      </span>
-                      <span className="text-sm opacity-90">
-                        This may take a moment
-                      </span>
+                      <span className="text-base font-bold">🤖 AI is generating...</span>
+                      <span className="text-xs opacity-90">Crafting your perfect trip</span>
                     </div>
                   </div>
                 ) : (
-                  "Create My Itinerary"
+                  <div className="flex items-center justify-center gap-2">
+                    <span>🚀</span>
+                    <span>Generate My AI Itinerary</span>
+                  </div>
                 )}
-                {loading && (
-              <div className="absolute inset-0 animate-pulse" style={{ background: 'linear-gradient(90deg, rgba(32,147,239,0.06), rgba(32,147,239,0.03) 50%, rgba(32,147,239,0.06))' }}></div>
-                )}
-              </button>
+              </motion.button>
               {loading && (
-                  <div className="mt-4 text-center">
-                    <div className="rounded-lg p-3 text-sm" style={{ backgroundColor: '#eaf3ff', border: '1px solid rgba(32,147,239,0.12)', color: '#0f172a' }}>
-                      <div className="flex items-center justify-center space-x-2 mb-2">
-                        <div className="w-3 h-3 border-2 border-transparent border-t-transparent rounded-full animate-spin" style={{ borderColor: 'rgba(32,147,239,0.3)' }}></div>
-                        <span className="font-semibold">Crafting Your Perfect Journey</span>
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: 0.2 }}
+                    className="mt-6 text-center"
+                  >
+                    <div className="rounded-lg p-4 text-sm shadow-md" style={{ backgroundColor: '#eaf3ff', border: '2px solid #2093EF' }}>
+                      <div className="flex items-center justify-center space-x-2 mb-4">
+                        <motion.span
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 2, repeat: Infinity }}
+                        >
+                          🤖
+                        </motion.span>
+                        <span className="font-bold text-lg" style={{ color: '#2093EF' }}>
+                          AI is crafting your itinerary
+                        </span>
                       </div>
-                      <div className="text-xs">
-                        <div>✓ Analyzing your preferences</div>
-                        <div>✓ Finding best destinations</div>
-                        <div className="flex items-center space-x-1">
-                          <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: '#ef6614' }}></div>
-                          <span>Creating personalized itinerary...</span>
-                        </div>
+                      <div className="space-y-3 text-xs" style={{ color: '#1e40af' }}>
+                        <motion.div
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0 }}
+                          className="flex items-center space-x-2"
+                        >
+                          <span className="text-lg">✅</span>
+                          <span>Analyzing your travel preferences</span>
+                        </motion.div>
+                        <motion.div
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.2 }}
+                          className="flex items-center space-x-2"
+                        >
+                          <span className="text-lg">🔍</span>
+                          <span>Finding perfect destinations & activities</span>
+                        </motion.div>
+                        <motion.div
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.4 }}
+                          className="flex items-center space-x-2"
+                        >
+                          <motion.span
+                            animate={{ opacity: [0.5, 1, 0.5] }}
+                            transition={{ duration: 1.5, repeat: Infinity }}
+                            className="text-lg"
+                          >
+                            ⚡
+                          </motion.span>
+                          <span>Generating personalized itinerary...</span>
+                        </motion.div>
                       </div>
                     </div>
-                  </div>
+                  </motion.div>
               )}
             </div>
           </form>

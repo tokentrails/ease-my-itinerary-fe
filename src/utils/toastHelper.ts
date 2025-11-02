@@ -20,3 +20,19 @@ export const showToast = (message: string, status: ToastStatus): void => {
       break;
   }
 };
+
+export const showSuccessToast = (message: string): void => {
+  toast.success(message);
+};
+
+export const showErrorToast = (message: string): void => {
+  toast.error(message);
+};
+
+export const showInfoToast = (message: string): void => {
+  toast.info(message);
+};
+
+export const showWarningToast = (message: string): void => {
+  toast.warn(message);
+};

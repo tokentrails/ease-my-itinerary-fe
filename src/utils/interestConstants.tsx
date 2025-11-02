@@ -1,0 +1,108 @@
+import {
+  Landmark,
+  Palette,
+  Leaf,
+  Zap,
+  Mountain,
+  Compass,
+  Camera,
+  Trees,
+  Dumbbell,
+  Waves,
+  UtensilsCrossed,
+  ShoppingBag,
+  Moon,
+} from "lucide-react";
+
+export const INTERESTS = [
+  {
+    id: "heritage",
+    name: "Heritage",
+    icon: <Landmark size={24} />,
+    desc: "Historical monuments",
+  },
+  {
+    id: "culture",
+    name: "Culture",
+    icon: <Palette size={24} />,
+    desc: "Art & traditions",
+  },
+  {
+    id: "wellness",
+    name: "Wellness",
+    icon: <Leaf size={24} />,
+    desc: "Spa & wellness",
+  },
+  {
+    id: "festivals",
+    name: "Festivals",
+    icon: <Zap size={24} />,
+    desc: "Local celebrations",
+  },
+  {
+    id: "adventure",
+    name: "Adventure",
+    icon: <Compass size={24} />,
+    desc: "Thrilling activities",
+  },
+  {
+    id: "spiritual",
+    name: "Spiritual",
+    icon: <Mountain size={24} />,
+    desc: "Meditation & peace",
+  },
+  {
+    id: "wildlife",
+    name: "Wildlife",
+    icon: <Trees size={24} />,
+    desc: "Nature & animals",
+  },
+  {
+    id: "photography",
+    name: "Photography",
+    icon: <Camera size={24} />,
+    desc: "Scenic beauty",
+  },
+  {
+    id: "nature",
+    name: "Nature",
+    icon: <Leaf size={24} />,
+    desc: "Natural scenery",
+  },
+  {
+    id: "mountains",
+    name: "Mountains",
+    icon: <Mountain size={24} />,
+    desc: "Mountain trekking",
+  },
+  {
+    id: "sports",
+    name: "Sports",
+    icon: <Dumbbell size={24} />,
+    desc: "Athletic activities",
+  },
+  {
+    id: "beach",
+    name: "Beach",
+    icon: <Waves size={24} />,
+    desc: "Coastal getaways",
+  },
+  {
+    id: "food",
+    name: "Food",
+    icon: <UtensilsCrossed size={24} />,
+    desc: "Culinary experience",
+  },
+  {
+    id: "shopping",
+    name: "Shopping",
+    icon: <ShoppingBag size={24} />,
+    desc: "Shopping & markets",
+  },
+  {
+    id: "nightlife",
+    name: "Nightlife",
+    icon: <Moon size={24} />,
+    desc: "Evening entertainment",
+  },
+];

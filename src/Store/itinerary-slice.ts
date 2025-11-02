@@ -13,10 +13,14 @@ const itinerarySlice  =createSlice({
         addTrip:(state,action)=>{
            
              Object.assign(state, action.payload);
+        },
+        setBookingData:(state,action)=>{
+             Object.assign(state, action.payload);
         }
     }
 })
 
-export const {addTrip}  = itinerarySlice.actions
+export const {addTrip, setBookingData}  = itinerarySlice.actions
 export const TripInfo = (state:RootState)=>state.itinerary
 export default itinerarySlice.reducer
+

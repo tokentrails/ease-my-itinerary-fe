@@ -20,7 +20,7 @@ const DisplayCard = (props: Props) => {
         opacity: 0,
         y: 50,
       }}
-      whileInView={{
+      animate={{
         opacity: 1,
         y: 0,
       }}
