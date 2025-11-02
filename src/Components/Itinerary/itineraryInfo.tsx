@@ -41,6 +41,7 @@ import ItinaryForm from "../Form";
 import BookingConfirmationModal from "./BookingConfirmationModal";
 import CompleteBookingModal from "./CompleteBookingModal";
 import ShareModal from "./ShareModal";
+import RouteMap from "./components/RouteMap";
 
 const ItineraryInfo = () => {
   const [data, setData] = useState<any | null>(null);
@@ -918,7 +919,7 @@ const ItineraryInfo = () => {
                             {data &&
                             data.day_plans &&
                             data.day_plans.length > 0 ? (
-                              <div className="py-4"></div>
+                              <RouteMap dayPlans={data.day_plans} />
                             ) : (
                               <div className="flex items-center justify-center p-12 bg-gray-50 rounded-lg">
                                 <p className="text-gray-500 font-medium">

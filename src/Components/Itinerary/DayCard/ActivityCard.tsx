@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import moment from "moment";
-import { Star,FerrisWheel } from "lucide-react";
+import { Star, FerrisWheel, MapPin } from "lucide-react";
 import { useState } from "react";
+import MapLocationModal from "../components/MapLocationModal";
 interface ActivityProps {
   activity: any;
 }
@@ -24,9 +25,13 @@ const TimeLine = () => {
 };
 const ActivityList = (props: ActivityProps) => {
   const { activity } = props;
-  const [open, setOpen] = useState(true);
+  const [open] = useState(true);
+  const [showMapModal, setShowMapModal] = useState(false);
   // event wrapper may have optional activity; this component is only rendered for activity events
   if (!activity.activity) return null;
+  
+  const hasLocation =
+    activity.activity.location?.latitude && activity.activity.location?.longitude;
   return (
     <div
       className="flex flex-row  w-full cursor-pointer  border-gray-300"
@@ -115,8 +120,37 @@ const ActivityList = (props: ActivityProps) => {
               })}
             </div>
           )}
+
+          {/* Location Button */}
+          {hasLocation && (
+            <div className="mt-4 flex gap-2">
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setShowMapModal(true)}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-white transition-colors"
+                style={{ backgroundColor: '#2093EF' }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#1678D4';
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#2093EF';
+                }}
+              >
+                <MapPin size={16} />
+                View Location
+              </motion.button>
+            </div>
+          )}
         </motion.div>
       </motion.div>
+
+      {/* Map Modal */}
+      <MapLocationModal
+        isOpen={showMapModal}
+        onClose={() => setShowMapModal(false)}
+        location={activity.activity.location}
+      />
     </div>
   );
 };
