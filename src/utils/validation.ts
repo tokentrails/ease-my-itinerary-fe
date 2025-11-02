@@ -39,6 +39,49 @@ export const validatePhone = (phone: string): { isValid: boolean; error: string 
   return { isValid: true, error: '' };
 };
 
+export const validateCardNumber = (cardNumber: string): { isValid: boolean; error: string } => {
+  if (!cardNumber) {
+    return { isValid: false, error: 'Card number is required' };
+  }
+
+  // Remove spaces and dashes
+  const digitsOnly = cardNumber.replace(/\D/g, '');
+
+  // Check if card number is between 13 and 19 digits (valid for most card types)
+  if (digitsOnly.length < 13 || digitsOnly.length > 19) {
+    return { isValid: false, error: 'Card number must be between 13 and 19 digits' };
+  }
+
+  // Luhn algorithm validation
+  if (!luhnCheck(digitsOnly)) {
+    return { isValid: false, error: 'Invalid card number' };
+  }
+
+  return { isValid: true, error: '' };
+};
+
+// Luhn algorithm for card number validation
+const luhnCheck = (cardNumber: string): boolean => {
+  let sum = 0;
+  let isEven = false;
+
+  for (let i = cardNumber.length - 1; i >= 0; i--) {
+    let digit = parseInt(cardNumber[i], 10);
+
+    if (isEven) {
+      digit *= 2;
+      if (digit > 9) {
+        digit -= 9;
+      }
+    }
+
+    sum += digit;
+    isEven = !isEven;
+  }
+
+  return sum % 10 === 0;
+};
+
 export const validateTravelerDetails = (traveler: {
   first_name: string;
   last_name: string;

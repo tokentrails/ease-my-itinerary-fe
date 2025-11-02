@@ -14,7 +14,7 @@ export const apiCaller = async <T>(
       'Content-Type': 'application/json',
       ...customHeaders,
     },
-    body: body ? JSON.stringify(body) : undefined,
+    body: method === 'GET' ? undefined : (body ? JSON.stringify(body) : undefined),
   });
 
 

@@ -28,18 +28,15 @@ const TimeLine = () => {
 
 const MealsCard = (props: Props) => {
   const { meal } = props;
-  const [open, setOpen] = useState(false);
-  const toggleOpen = () => setOpen((s) => !s);
-  const onKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" || e.key === " ") toggleOpen();
-  };
+  const [open, setOpen] = useState(true);
+
 
   return (
     <div
       className="flex relative overflow-hidden   w-full cursor-pointer"
-      onClick={toggleOpen}
+
       tabIndex={0}
-      onKeyDown={onKeyDown}
+
       role="button"
       aria-expanded={open}
     >
@@ -54,7 +51,7 @@ const MealsCard = (props: Props) => {
                 <h3 style={{ color: '#2093EF' }}>{meal.meal!.restaurant_name}</h3>
 
                 <p className="text-sm  text-gray-400">{meal.meal!.cuisine}</p>
-                {meal.meal && meal.meal.reservation_time && (
+                {meal.meal && meal.meal.reservation_time&& meal.meal.reservation_time!=="N/A" && (
                   <div className="flex items-center ">
                     <p className=" text-gray-500 text-sm">
                       {moment(meal.meal.reservation_time, "HH:mm").format(
@@ -84,15 +81,7 @@ const MealsCard = (props: Props) => {
             </div>
           </div>
 
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.25, ease: "easeInOut" }}
-            className="  text-sm -mt-4"
-            style={{ color: '#2093EF' }}
-          >
-            {open ? "Show less" : "Details"}
-          </motion.p>
+        
 
           <motion.div
             initial={{ opacity: 0 }}

@@ -120,7 +120,7 @@ const Loader = ({
           repeatDelay: 1,
         }}
       >
-        <div className="w-[90%] h-full bg-gradient-to-r from-[#65b5f75d] via-white/10 to-[#65b5f75d] skew-x-7" />
+        
       </motion.div>
     </motion.div>
   );

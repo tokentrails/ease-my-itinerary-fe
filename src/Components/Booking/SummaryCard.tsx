@@ -34,7 +34,7 @@ const SummaryCard: React.FC<SummaryCardProps> = ({
     <motion.div
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
-      className="lg:col-span-1"
+      className="lg:col-span-1 mt-5 md:mt-0"
     >
       <div className="sticky top-32 bg-white rounded-lg shadow-md p-6 space-y-6">
         {/* Trip Summary Section */}

@@ -11,16 +11,18 @@ import { INTERESTS } from "../../utils/interestConstants";
 import { getFormValues, updateFormField } from "../../Store/form-slice";
 
 import { validationSchema } from "./formikSetup";
+import { resetTrip } from "../../Store/itinerary-slice";
 
 interface ItinaryFormProps {
   onSubmit: () => void;
+  Chat:boolean
 }
 const ItinaryForm = (props: ItinaryFormProps) => {
   const { onSubmit } = props;
   const dispatch = useDispatch();
   const [errors, setErrors] = useState<any>({});
   const [touched, setTouched] = useState<any>({});
-
+  const [openChat,setOpenChat]=useState(false)
   const formValues = useSelector(getFormValues);
 
   const handleFieldChange = (field: string, value: any) => {
@@ -36,6 +38,7 @@ const ItinaryForm = (props: ItinaryFormProps) => {
       // Validate form
       await validationSchema.validate(formValues, { abortEarly: false });
       setErrors({});
+      dispatch(resetTrip());
       onSubmit();
       console.log("Form Values Submitted:", formValues);
     } catch (validationError: any) {
@@ -54,7 +57,7 @@ const ItinaryForm = (props: ItinaryFormProps) => {
     <div className=" bg-wite text-black flex items-center justify-center p-6">
       <div>
         <form onSubmit={handleSubmit} className="flex  flex-col items-center">
-          <div className="shadow-2x w-full p-5 bg-white rounded overflow-hidden flex flex-col md:flex-row justify-start items-center">
+          <div className="shadow-2x w-full p-5 md:p-0 bg-white rounded overflow-hidden flex flex-col md:flex-row justify-start items-center">
             <div className="md:border-r-[2px] w-full md:w-[200px] border-gray-200 px-2">
               <SearchLoaction
                 value={formValues.source}
@@ -81,7 +84,9 @@ const ItinaryForm = (props: ItinaryFormProps) => {
                   value={formValues.start_date}
                   title={"From"}
                   errorMessage={errors.start_date ? errors.start_date : ""}
-                  minDate={new Date(new Date().setDate(new Date().getDate() + 1))}
+                  minDate={
+                    new Date(new Date().setDate(new Date().getDate() + 1))
+                  }
                   onSelectDate={function (date: string): void {
                     handleFieldChange("start_date", date);
                   }}
@@ -92,7 +97,11 @@ const ItinaryForm = (props: ItinaryFormProps) => {
                   value={formValues.end_date}
                   title={"To"}
                   errorMessage={errors.end_date ? errors.end_date : ""}
-                  minDate={formValues.start_date ? new Date(formValues.start_date) : undefined}
+                  minDate={
+                    formValues.start_date
+                      ? new Date(formValues.start_date)
+                      : undefined
+                  }
                   onSelectDate={function (date: string): void {
                     handleFieldChange("end_date", date);
                   }}
@@ -135,7 +144,7 @@ const ItinaryForm = (props: ItinaryFormProps) => {
                 />
               </div>
             </div>
-           <div className="flex w-full md:w-[200px] ">
+            <div className="flex w-full md:w-[200px] ">
               <div className="pl-2 w-full md:w-[100px]  md:border-r-[2px]   border-gray-200 ">
                 <FormSelect
                   value={formValues.meal_preference}
@@ -191,7 +200,9 @@ const ItinaryForm = (props: ItinaryFormProps) => {
               </svg>
               Generate Itinerary Using AI
             </button>
+            
           </div>
+          
         </form>
       </div>
     </div>

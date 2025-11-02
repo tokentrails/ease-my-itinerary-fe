@@ -27,7 +27,7 @@ const BookingHeader: React.FC<BookingHeaderProps> = ({ trip }) => {
           <ArrowBackIcon sx={{ fontSize: '24px' }} />
         </button>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Complete Your Booking</h1>
+          <h1 className="text-2xl font-bold text-gray-900"> 1</h1>
           <p className="text-sm text-gray-500">
             {trip?.destination} • {trip?.duration_days} Days
           </p>

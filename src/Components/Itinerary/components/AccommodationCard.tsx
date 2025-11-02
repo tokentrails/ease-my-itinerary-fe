@@ -12,7 +12,7 @@ interface AccommodationCardProps {
 const AccommodationCard: React.FC<AccommodationCardProps> = ({
   accommodation,
 }) => {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
 
   
 

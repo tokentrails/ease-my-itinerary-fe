@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { apiCaller } from '../../utils/apiCall';
 import type { ConfirmBookingPayload, ConfirmBookingResponse, PaymentDetails } from '../../types/booking';
 import { showSuccessToast, showErrorToast } from '../../utils/toastHelper';
-import { validateEmail, validatePhone } from '../../utils/validation';
+import { validateEmail, validatePhone, validateCardNumber } from '../../utils/validation';
 import { setBookingData } from '../../Store/itinerary-slice';
+import { UsetInfo } from '../../Store/user-slice';
 import type { Trip } from '../../Helper/ApiResponseInterface';
-import BookingHeader from './BookingHeader';
 import TravelerDetails from './TravelerDetails';
 import type { TravelerDetailsType } from './TravelerDetails';
 import PaymentMethod from './PaymentMethod';
@@ -18,6 +18,7 @@ interface BookingPageProps {
 
 const BookingPage: React.FC<BookingPageProps> = ({ trip }) => {
   const dispatch = useDispatch();
+  const userInfo = useSelector(UsetInfo);
   const [paymentMethod, setPaymentMethod] = useState<'credit_card' | 'upi'>('credit_card');
   const [expandedTraveler, setExpandedTraveler] = useState<number | null>(0);
   const [upiId, setUpiId] = useState('');
@@ -115,7 +116,10 @@ const BookingPage: React.FC<BookingPageProps> = ({ trip }) => {
       const response = await apiCaller<ConfirmBookingResponse>(
         '/api/v1/bookings/confirm',
         'POST',
-        bookingPayload
+        bookingPayload,
+        {
+          Authorization: `Bearer ${userInfo.access_token}`,
+        }
       );
 
       if (response.success && response.data) {
@@ -128,15 +132,10 @@ const BookingPage: React.FC<BookingPageProps> = ({ trip }) => {
         // Store booking data in session storage for confirmation page
         sessionStorage.setItem('bookingConfirmation', JSON.stringify(response.data));
         
-        // Navigate to itinerary page to show confirmation modal
+        // Navigate to booking confirmation page
         setTimeout(() => {
-          const tripId = response.data?.trip_id;
-          if (tripId) {
-            window.location.href = `/itinerary?id=${tripId}`;
-          } else {
-            window.location.href = '/itinerary';
-          }
-        }, 2000);
+          window.location.href = '/booking-confirmation';
+        }, 1000);
       } else {
         showErrorToast(response.message || 'Booking failed. Please try again.');
       }
@@ -169,18 +168,18 @@ const BookingPage: React.FC<BookingPageProps> = ({ trip }) => {
     }) &&
     acceptTerms &&
     (paymentMethod === 'credit_card' 
-      ? (cardholderName && cardNumber && expiryMonth && expiryYear && cvv)
+      ? (cardholderName && cardNumber && expiryMonth && expiryYear && cvv && validateCardNumber(cardNumber).isValid)
       : (paymentMethod === 'upi' && upiId))
   );
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <BookingHeader trip={trip} />
+    <div className="min-h-screen ">
 
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+      <div className="max-w-6xl mx-auto px-0 md:px-4 py-1 md:py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 md:gap-8">
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-8">
+          <div className="lg:col-span-2  space-y-8">
             <TravelerDetails
               travelers={travelers}
               expandedTraveler={expandedTraveler}

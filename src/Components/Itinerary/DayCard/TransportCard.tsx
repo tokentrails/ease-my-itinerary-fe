@@ -33,18 +33,14 @@ const TimeLine = () => {
 
 const TransportCard = (props: Props) => {
   const { transport } = props;
-  const [open, setOpen] = useState(false);
-  const toggleOpen = () => setOpen((s) => !s);
-  const onKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" || e.key === " ") toggleOpen();
-  };
-
+  const [open, setOpen] = useState(true);
+  
   return (
     <div
       className="flex relative overflow-hidden  w-full cursor-pointer"
-      onClick={toggleOpen}
+
       tabIndex={0}
-      onKeyDown={onKeyDown}
+
       role="button"
       aria-expanded={open}
     >
@@ -81,15 +77,7 @@ const TransportCard = (props: Props) => {
 
           <div className="flex flex-col md:flex-row md:justify-between md:items-start"></div>
 
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.25, ease: "easeInOut" }}
-            className=" text-sm"
-            style={{ color: "#2093EF" }}
-          >
-            {open ? "Show less" : "Details"}
-          </motion.p>
+      
 
           <motion.div
             initial={{ opacity: 0 }}

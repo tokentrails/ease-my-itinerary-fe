@@ -9,6 +9,12 @@ import {
 import { MessageCircle, X, Send } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import type { Trip } from "../../Helper/ApiResponseInterface";
+import { apiCaller } from "../../utils/apiCall";
+import { useSelector } from "react-redux";
+import { UsetInfo } from "../../Store/user-slice";
+import { showErrorToast, showSuccessToast } from "../../utils/toastHelper";
+import DOMPurify from "dompurify";
+import { marked } from "marked";
 
 type MessageSender = "user" | "bot";
 
@@ -17,6 +23,7 @@ interface Message {
   text: string;
   sender: MessageSender;
   timestamp: Date;
+  htmlContent?: string;
 }
 
 const INITIAL_MESSAGE: Message = {
@@ -26,16 +33,10 @@ const INITIAL_MESSAGE: Message = {
   timestamp: new Date(),
 };
 
-const BOT_RESPONSES: readonly string[] = [
-  "That's interesting! Tell me more about that.",
-  "I understand. How can I assist you with this?",
-  "Great question! Let me help you with that.",
-  "I'm here to help. What else would you like to know?",
-  "Thanks for sharing! Is there anything specific you'd like assistance with?",
-] as const;
 interface Props {
+  tripId?: string;
   chats: any[];
-  updateValues: (value: Trip) => void;
+  updateValues: (value: string) => void;
 }
 const ChatBot = (props: Props) => {
   console.log(props, "props");
@@ -44,33 +45,66 @@ const ChatBot = (props: Props) => {
   const [input, setInput] = useState<string>("");
   const [isTyping, setIsTyping] = useState<boolean>(false);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const userInfo = useSelector(UsetInfo);
 
   const scrollToBottom = (): void => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const renderMarkdown = async (text: string): Promise<string> => {
+    const html = await marked(text);
+    return DOMPurify.sanitize(html);
   };
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
-  const simulateBotResponse = (userMessage: string): void => {
+  const sendChatMessage = async (userMessage: string): Promise<void> => {
+    if (!props.tripId) {
+      showErrorToast("Trip ID not found. Cannot send message.");
+      return;
+    }
+
     console.log(userMessage);
     setIsTyping(true);
 
-    setTimeout(() => {
-      const randomIndex: number = Math.floor(
-        Math.random() * BOT_RESPONSES.length
+    try {
+      const response = await apiCaller<any>(
+        `/api/v1/trips/${props.tripId}/chat`,
+        "POST",
+        {
+          message: userMessage,
+        },
+        {
+          Authorization: `Bearer ${userInfo.access_token}`,
+        }
       );
-      const botMessage: Message = {
-        id: Date.now().toString(),
-        text: BOT_RESPONSES[randomIndex],
-        sender: "bot",
-        timestamp: new Date(),
-      };
 
-      setMessages((prev: Message[]) => [...prev, botMessage]);
+      if (response && response.data) {
+        if(response.data.trip_updated){
+          props.updateValues(props.tripId);
+        }
+        const htmlContent = await renderMarkdown(response.data.message);
+        const botMessage: Message = {
+          id: Date.now().toString(),
+          text: response.data.message,
+          sender: "bot",
+          timestamp: new Date(),
+          htmlContent: htmlContent,
+        };
+        setMessages((prev: Message[]) => [...prev, botMessage]);
+        showSuccessToast("Response received!");
+
+      } else {
+        showErrorToast("Failed to get response from AI");
+      }
+    } catch (error: any) {
+      console.error("Chat error:", error);
+      showErrorToast(error.message || "Failed to send message");
+    } finally {
       setIsTyping(false);
-    }, 1000 + Math.random() * 1000);
+    }
   };
 
   const handleSend = (): void => {
@@ -84,8 +118,9 @@ const ChatBot = (props: Props) => {
     };
 
     setMessages((prev: Message[]) => [...prev, userMessage]);
+    const messageToSend = input;
     setInput("");
-    simulateBotResponse(input);
+    sendChatMessage(messageToSend);
   };
 
   const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>): void => {
@@ -133,7 +168,7 @@ const ChatBot = (props: Props) => {
                 damping: 20,
                 stiffness: 300,
               }}
-              whileHover={{ scale: 1.1 }}
+              whileHover={{ scale: 1 }}
               whileTap={{ scale: 0.95 }}
               onClick={toggleChat}
               className="cursor-pointer text-white rounded-full p-3 md:p-4 shadow-lg transition-all flex items-center gap-2"
@@ -158,7 +193,7 @@ const ChatBot = (props: Props) => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 600 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="bg-white rounded-t-3xl w-full sm:w-96 h-[70vh] sm:h-[32rem] flex flex-col overflow-hidden fixed bottom-0 right-0 sm:relative sm:bottom-auto sm:right-auto sm:rounded-2xl"
+              className="bg-white rounded-t-3xl w-full sm:w-96  md:w-[50vw] h-[70vh] sm:h-[32rem] flex flex-col overflow-hidden fixed bottom-0 right-0 sm:relative sm:bottom-auto sm:right-auto sm:rounded-2xl"
               style={{
                 boxShadow:
                   "0 -4px 20px rgba(0, 0, 0, 0.15), 0 4px 12px rgba(32, 147, 239, 0.1)",
@@ -194,7 +229,7 @@ const ChatBot = (props: Props) => {
                 </div>
                 <motion.button
                   whileHover={{
-                    scale: 1.1,
+
                     backgroundColor: "rgba(255,255,255,0.3)",
                   }}
                   whileTap={{ scale: 0.95 }}
@@ -227,8 +262,8 @@ const ChatBot = (props: Props) => {
                       }`}
                     >
                       <motion.div
-                        whileHover={{ scale: 1.02 }}
-                        className={`max-w-[85%] sm:max-w-[75%] rounded-2xl px-3 md:px-4 py-2 text-sm md:text-base ${
+                        whileHover={{ scale: 1 }}
+                        className={`max-w-[85%] sm:max-w-[75%] rounded-2xl px-3 md:px-4 py-2 text-sm md:text-sm ${
                           msg.sender === "user"
                             ? "text-white rounded-br-none shadow-md"
                             : "bg-white text-gray-800 shadow-sm rounded-bl-none border border-gray-100"
@@ -239,7 +274,16 @@ const ChatBot = (props: Props) => {
                             : {}
                         }
                       >
-                        <p>{msg.text}</p>
+                        {msg.sender === "bot" && msg.htmlContent ? (
+                          <div
+                            className="prose prose-sm max-w-none prose-headings:text-base prose-p:m-0 prose-p:mb-2 prose-ul:m-0 prose-ul:mb-2 prose-li:m-0 prose-strong:font-bold prose-em:italic"
+                            dangerouslySetInnerHTML={{
+                              __html: msg.htmlContent,
+                            }}
+                          />
+                        ) : (
+                          <p>{msg.text}</p>
+                        )}
                         <p
                           className={`text-xs mt-1 ${
                             msg.sender === "user"
@@ -321,7 +365,7 @@ const ChatBot = (props: Props) => {
                   <motion.button
                     whileHover={
                       input.trim()
-                        ? { scale: 1.05, backgroundColor: "#1678D4" }
+                        ? { scale: 1, backgroundColor: "#1678D4" }
                         : {}
                     }
                     whileTap={input.trim() ? { scale: 0.95 } : {}}

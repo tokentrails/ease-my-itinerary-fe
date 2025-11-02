@@ -2,17 +2,17 @@
 
 import moment from "moment";
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
-  Compass,
+
   Lightbulb,
   Star,
-  MapPin,
   Calendar,
   Users,
   DollarSign,
   TrendingDown,
   ChevronDown,
+  CheckCircle,
 } from "lucide-react";
 
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -35,11 +35,13 @@ import { useSelector, useDispatch } from "react-redux";
 import { getFormValues } from "../../Store/form-slice";
 import { UsetInfo } from "../../Store/user-slice";
 import { addTrip, TripInfo } from "../../Store/itinerary-slice";
-import { streamApiCaller } from "../../utils/apiCall";
+import { apiCaller, streamApiCaller } from "../../utils/apiCall";
 import { Alert } from "@mui/material";
 import ItinaryForm from "../Form";
 import BookingConfirmationModal from "./BookingConfirmationModal";
-import {dummyData}  from "./dymmyData";
+import CompleteBookingModal from "./CompleteBookingModal";
+import ShareModal from "./ShareModal";
+
 const ItineraryInfo = () => {
   const [data, setData] = useState<any | null>(null);
   const [days, setDays] = useState<any[] | null>([]);
@@ -51,18 +53,24 @@ const ItineraryInfo = () => {
     hasError: false,
     message: "Demo",
   });
+  const [onlyView, setOnlyView] = useState(false);
   const [summaryExpanded, setSummaryExpanded] = useState(false);
   const [showBookingConfirmation, setShowBookingConfirmation] = useState(false);
-  const [bookingConfirmationData, setBookingConfirmationData] = useState<any | null>(null);
+  const [bookingConfirmationData, setBookingConfirmationData] = useState<
+    any | null
+  >(null);
+  const [showCompleteBookingModal, setShowCompleteBookingModal] =
+    useState(false);
+  const [bookingStatus, setBookingStatus] = useState<string | null>(null);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [shareData, setShareData] = useState<any | null>(null);
+  const [shareLoading, setShareLoading] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [searchParams] = useSearchParams();
   const formValues = useSelector(getFormValues);
   const userInfo = useSelector(UsetInfo);
   const tripDataFromRedux = useSelector(TripInfo);
-
-  const id = searchParams.get("id");
-  const fromForm = searchParams.get("fromForm") === "true";
 
   const handleMainTabChange = (
     _event: React.SyntheticEvent,
@@ -77,9 +85,79 @@ const ItineraryInfo = () => {
   ) => {
     setDayActiveTab(newValue);
   };
-  const streamItineraryFromForm = async () => {
+  const fetchSharedTripByCode = async (shareCode: string) => {
+    setLoadingStream(true);
+    try {
+      await apiCaller(
+        "/api/v1/shared/trips/by-code/" + shareCode,
+        "GET",
+        {},
+        {
+          Authorization: `Bearer ${userInfo.access_token}`,
+        }
+      )
+        .then((response: any) => {
+          if (response && response.data) {
+            const data = response.data;
+            if (data.trip) {
+              setData({
+                ...data.trip,
+              });
+              console.log(data.trip, "tripDataFromRedux");
+              if ((data.trip as any).status) {
+                setBookingStatus((data.trip as any).status);
+              }
+
+              if (data.trip.day_plans) {
+                console.log(data.trip, "day_plans");
+                const days_ = [...data.trip.day_plans];
+                if (days_.length < data.trip.duration_days) {
+                  for (let i = days_.length; i < data.trip.duration_days; i++) {
+                    days_.push([]);
+                  }
+                }
+
+                setDays(days_);
+              } else {
+                const days_ = [];
+                for (let i = 0; i < data.trip.duration_days; i++) {
+                  days_.push([]);
+                }
+                setDays(days_);
+              }
+              setOnlyView(true)
+              // Clear error when data is received successfully
+              setErrorInApiCall({
+                hasError: false,
+                message: "",
+              });
+            }
+            setLoadingStream(false);
+          } else {
+            setLoadingStream(false);
+            setErrorInApiCall({
+              hasError: true,
+              message: "Failed to load itinerary.",
+            });
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+        })
+        .finally(() => {
+          setLoadingStream(false);
+        });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const streamItineraryFromForm = useCallback(async () => {
     try {
       setLoadingStream(true);
+      setErrorInApiCall({
+        hasError: false,
+        message: "",
+      });
       setStreamLoaderMessage("Initializing itinerary generation...");
       const payLoad: any = JSON.parse(JSON.stringify(formValues));
       payLoad.budget = Number(payLoad.budget);
@@ -102,7 +180,7 @@ const ItineraryInfo = () => {
       });
     } catch (error) {
       setLoadingStream(false);
-      console.log(error)
+      console.log(error);
       setErrorInApiCall({
         hasError: true,
         message: "Failed to stream itinerary.",
@@ -110,7 +188,75 @@ const ItineraryInfo = () => {
       //navigate("/");
       // streamItineraryFromForm();
     }
-  };
+  }, [formValues, userInfo]);
+  const getInfoBasedOnId = useCallback(
+    (id: string) => {
+      setLoadingStream(true);
+      setStreamLoaderMessage("Loading itinerary...");
+      apiCaller(
+        "/api/v1/trips/" + id,
+        "GET",
+        {},
+        {
+          Authorization: `Bearer ${userInfo.access_token}`,
+        }
+      )
+        .then((response: any) => {
+          console.log(response);
+          if (response && response.data) {
+            const data = response.data;
+            if (data.trip) {
+              setData({
+                ...data.trip,
+              });
+              console.log(data.trip, "tripDataFromRedux");
+              if ((data.trip as any).status) {
+                setBookingStatus((data.trip as any).status);
+              }
+
+              if (data.trip.day_plans) {
+                console.log(data.trip, "day_plans");
+                const days_ = [...data.trip.day_plans];
+                if (days_.length < data.trip.duration_days) {
+                  for (let i = days_.length; i < data.trip.duration_days; i++) {
+                    days_.push([]);
+                  }
+                }
+
+                setDays(days_);
+              } else {
+                const days_ = [];
+                for (let i = 0; i < data.trip.duration_days; i++) {
+                  days_.push([]);
+                }
+                setDays(days_);
+              }
+              // Clear error when data is received successfully
+              setErrorInApiCall({
+                hasError: false,
+                message: "",
+              });
+            }
+            setLoadingStream(false);
+          } else {
+            setLoadingStream(false);
+            setErrorInApiCall({
+              hasError: true,
+              message: "Failed to load itinerary.",
+            });
+          }
+        })
+        .catch((error: any) => {
+          console.log(error);
+          setLoadingStream(false);
+          setErrorInApiCall({
+            hasError: true,
+            message: "Failed to load itinerary.",
+          });
+        });
+    },
+    [userInfo.access_token]
+  );
 
   // Handle streamed data updates
   const handleStreamedData = (streamedData: any) => {
@@ -193,38 +339,99 @@ const ItineraryInfo = () => {
         // Replace query params: remove fromForm=true and add id with trip id
         if (streamedData.data && streamedData.data.id) {
           const params = new URLSearchParams();
-          params.set('id', streamedData.data.id);
-          window.history.replaceState({}, '', `?${params.toString()}`);
+          params.set("id", streamedData.data.id);
+          window.history.replaceState({}, "", `?${params.toString()}`);
         }
       }, 3000);
     }
   };
 
-  useEffect(() => {
-    // if (id) {
-    //   fetchItineraryById(id);
-    // } else if (fromForm) {
-    //   streamItineraryFromForm();
-    // } else {
-    //   setLoadingStream(false);
-    // }
-    handleStreamedData(dummyData);
-  }, [id, fromForm]);
+  // Handle share itinerary
+  const handleShareTrip = useCallback(async () => {
+    try {
+      const id = searchParams.get("id") || data?.id;
+      if (!id) {
+        throw new Error("Trip ID not found");
+      }
 
-  // Load data from Redux if available (booking confirmation data)
+      setShareLoading(true);
+      const response = await apiCaller<any>(
+        `/api/v1/trips/${id}/share`,
+        "POST",
+        {
+          permission: "view",
+          expires_in: 24,
+          include_qr: false,
+        },
+        {
+          Authorization: `Bearer ${userInfo.access_token}`,
+        }
+      );
+
+      if (response && response.data) {
+        setShareData(response.data);
+        setShowShareModal(true);
+        const { showSuccessToast } = await import("../../utils/toastHelper");
+        showSuccessToast("Share link created successfully!");
+      }
+    } catch (error: any) {
+      console.error("Error sharing trip:", error);
+      const { showErrorToast } = await import("../../utils/toastHelper");
+      showErrorToast(error.message || "Failed to create share link");
+    } finally {
+      setShareLoading(false);
+    }
+  }, [searchParams, data?.id, userInfo.access_token]);
+
+  // Fetch itinerary data based on ID
+  let hasInitialized = false;
+
   useEffect(() => {
-    if (tripDataFromRedux && tripDataFromRedux.id && tripDataFromRedux.day_plans) {
-      setData(tripDataFromRedux);
-      setDays(tripDataFromRedux.day_plans || []);
+    const id = searchParams.get("id");
+
+    const fromForm = searchParams.get("fromForm") === "true";
+    if (id && !hasInitialized) {
+      console.log({ id }, "id");
+      getInfoBasedOnId(id);
+      hasInitialized = true;
+    } else if (fromForm && !hasInitialized) {
+      console.log("Initializing stream");
+      streamItineraryFromForm();
+
+      hasInitialized = true;
+    } else if (window.location.pathname.includes("/share/")) {
+      const shareCode = window.location.pathname.split("/share/")[1];
+      console.log(shareCode, "shareCode");
+      if (shareCode && !hasInitialized) {
+        fetchSharedTripByCode(shareCode);
+      }
+      hasInitialized = true;
+    } else {
       setLoadingStream(false);
     }
-  }, [tripDataFromRedux]);
+    // handleStreamedData(dummyData);
+  }, []);
 
-  // Show booking confirmation modal when Redux data has booking confirmation
+  // Load data from Redux if available and handle booking confirmation
   useEffect(() => {
-    if (tripDataFromRedux && (tripDataFromRedux as any).booking_id) {
-      setBookingConfirmationData(tripDataFromRedux);
-      setShowBookingConfirmation(true);
+    if (tripDataFromRedux && tripDataFromRedux.id) {
+      // Load itinerary data
+      if (tripDataFromRedux.day_plans) {
+        setData(tripDataFromRedux);
+        setDays(tripDataFromRedux.day_plans || []);
+        setLoadingStream(false);
+      }
+
+      // Check booking status
+      console.log(tripDataFromRedux, "tripDataFromRedux");
+      if ((tripDataFromRedux as any).status) {
+        setBookingStatus((tripDataFromRedux as any).status);
+      }
+
+      // Show booking confirmation modal if booking_id exists
+      if ((tripDataFromRedux as any).booking_id) {
+        setBookingConfirmationData(tripDataFromRedux);
+      }
     }
   }, [tripDataFromRedux]);
 
@@ -256,13 +463,30 @@ const ItineraryInfo = () => {
                 messages={streamLoaderMessage}
               />
             )}
-            {!loadingStream && (
+            {!onlyView && !loadingStream && bookingStatus !== "confirmed" && (
               <ChatBot
+                tripId={data?.id}
                 chats={[]}
-                updateValues={function (value: Trip): void {
-                  console.log(value);
+                updateValues={function (value: string): void {
+                  getInfoBasedOnId(value);
                 }}
               />
+            )}
+            {bookingStatus === "confirmed" && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="bg-gradient-to-r items-center flex flex-col from-green-50 to-emerald-50 rounded-2xl p-8 border-2 border-green-200 shadow-lg"
+              >
+                <h3 className="text-2xl font-bold text-green-700 mb-2">
+                  Booking Confirmed
+                </h3>
+                <p className="text-green-600 mb-6">
+                  Your itinerary has been successfully booked. Visit your
+                  profile to view all your confirmed trips.
+                </p>
+              </motion.div>
             )}
             <div>
               {data && (
@@ -287,14 +511,18 @@ const ItineraryInfo = () => {
                         >
                           <ArrowBackIcon sx={{ fontSize: "24px" }} />
                         </motion.button>
-                        <motion.button
-                          initial={{ opacity: 0, x: 20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ duration: 0.3 }}
-                          className="p-2 hover:bg-white/20 rounded-full transition-colors"
-                        >
-                          <ShareIcon sx={{ fontSize: "24px" }} />
-                        </motion.button>
+                        {!onlyView && !loadingStream && (
+                          <motion.button
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.3 }}
+                            onClick={() => handleShareTrip()}
+                            disabled={shareLoading}
+                            className="p-2 hover:bg-white/20 rounded-full transition-colors disabled:opacity-50"
+                          >
+                            <ShareIcon sx={{ fontSize: "24px" }} />
+                          </motion.button>
+                        )}
                       </div>
 
                       {/* Title Section */}
@@ -395,7 +623,7 @@ const ItineraryInfo = () => {
                           className="text-xl font-semibold mb-4 flex items-center gap-2"
                           style={{ color: "#2093EF" }}
                         >
-                          <MapPin size={24} />
+
                           Weather & Climate
                         </h2>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -414,14 +642,14 @@ const ItineraryInfo = () => {
                               {data.weather_info.season}
                             </p>
                           </div>
-                          <div>
-                            <p className="text-gray-600 text-sm mb-1">
-                              Condition
-                            </p>
-                            <p className="text-md font-medium text-gray-900">
-                              {data.weather_info.description}
-                            </p>
-                          </div>
+                        </div>
+                        <div className="mt-5">
+                          <p className="text-gray-600 text-sm mb-1">
+                            Description
+                          </p>
+                          <p className="text-md font-medium text-gray-900">
+                            {data.weather_info.description}
+                          </p>
                         </div>
                         <div className="mt-4 bg-amber-50 border border-amber-200 rounded-lg p-4">
                           <p className="font-semibold text-amber-900 mb-2">
@@ -481,6 +709,10 @@ const ItineraryInfo = () => {
                           <Tab
                             sx={{ textTransform: "inherit", fontWeight: 500 }}
                             label="✈️ Travel"
+                          />
+                          <Tab
+                            sx={{ textTransform: "inherit", fontWeight: 500 }}
+                            label="🗺️ Route Map"
                           />
                         </Tabs>
                       </Box>
@@ -675,6 +907,27 @@ const ItineraryInfo = () => {
                             )}
                           </motion.div>
                         )}
+
+                        {/* Route Map Tab */}
+                        {mainActiveTab == 3 && (
+                          <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 0.3 }}
+                          >
+                            {data &&
+                            data.day_plans &&
+                            data.day_plans.length > 0 ? (
+                              <div className="py-4"></div>
+                            ) : (
+                              <div className="flex items-center justify-center p-12 bg-gray-50 rounded-lg">
+                                <p className="text-gray-500 font-medium">
+                                  No route data available.
+                                </p>
+                              </div>
+                            )}
+                          </motion.div>
+                        )}
                       </div>
                     </motion.div>
 
@@ -750,40 +1003,7 @@ const ItineraryInfo = () => {
                         </div>
                       ) : null}
 
-                      {data.travel_tips && data.travel_tips.length > 0 ? (
-                        <motion.div
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.5, delay: 0.8 }}
-                          className="mt-8"
-                        >
-                          <DisplayCard
-                            icon={<Compass color="#2093EF" size={24} />}
-                            title={" Travel Tips"}
-                            data={data.travel_tips}
-                            delay={0.8}
-                          />
-                        </motion.div>
-                      ) : loadingStream ? (
-                        <div className="mt-8 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                          <Skeleton
-                            width="130px"
-                            height="28px"
-                            variant="text"
-                          />
-                          <div className="mt-4 space-y-3">
-                            {[0, 1, 2].map((index) => (
-                              <Skeleton
-                                key={index}
-                                width="100%"
-                                height="60px"
-                                variant="rounded"
-                                delay={index * 100}
-                              />
-                            ))}
-                          </div>
-                        </div>
-                      ) : null}
+                     
                     </div>
 
                     {/* Bottom Padding */}
@@ -848,41 +1068,55 @@ const ItineraryInfo = () => {
                       </div>
                     )}
 
-                    <motion.button
-                      whileHover={{
-                        scale: 1.05,
-                        boxShadow: "0 20px 25px -5px rgba(32, 147, 239, 0.3)",
-                      }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => {
-                        // Save trip data to Redux
-                        if (data) {
-                          dispatch(addTrip({
-                            ...data,
-                            traveler_count: data.traveler_count,
-                            budget: data.budget,
-                            source: data.source,
-                            start_date: data.start_date,
-                            end_date: data.end_date,
-                          }));
-                          // Navigate to booking page
-                          navigate('/confirm-booking');
-                        }
-                      }}
-                      className="px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-bold rounded-lg transition-all duration-300 flex items-center gap-2 whitespace-nowrap shadow-lg"
-                      style={{
-                        background:
-                          "linear-gradient(135deg, #2093EF 0%, #1678D4 100%)",
-                      }}
-                    >
-                      <span>Book Now</span>
-                      <motion.span
-                        animate={{ x: [0, 4, 0] }}
-                        transition={{ duration: 1.5, repeat: Infinity }}
+                    {!onlyView && bookingStatus !== "confirmed" ? (
+                      <motion.button
+                        whileHover={{
+                          scale: 1.05,
+                          boxShadow: "0 20px 25px -5px rgba(32, 147, 239, 0.3)",
+                        }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => {
+                          // Save trip data to Redux
+                          if (data) {
+                            dispatch(
+                              addTrip({
+                                ...data,
+                                traveler_count: data.traveler_count,
+                                budget: data.budget,
+                                source: data.source,
+                                start_date: data.start_date,
+                                end_date: data.end_date,
+                              })
+                            );
+                            // Show booking modal instead of navigating
+                            setShowCompleteBookingModal(true);
+                          }
+                        }}
+                        className="px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-bold rounded-lg transition-all duration-300 flex items-center gap-2 whitespace-nowrap shadow-lg"
+                        style={{
+                          background:
+                            "linear-gradient(135deg, #2093EF 0%, #1678D4 100%)",
+                        }}
                       >
-                        →
-                      </motion.span>
-                    </motion.button>
+                        <span>Book Now</span>
+                        <motion.span
+                          animate={{ x: [0, 4, 0] }}
+                          transition={{ duration: 1.5, repeat: Infinity }}
+                        >
+                          →
+                        </motion.span>
+                      </motion.button>
+                    ) : bookingStatus === "confirmed" ? (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.4 }}
+                        className="px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-lg flex items-center justify-center gap-2 whitespace-nowrap shadow-lg"
+                      >
+                        <CheckCircle className="w-5 h-5" />
+                        <span>Booking Confirmed</span>
+                      </motion.div>
+                    ) : null}
                   </div>
                 </div>
 
@@ -1069,6 +1303,20 @@ const ItineraryInfo = () => {
         isOpen={showBookingConfirmation}
         bookingData={bookingConfirmationData}
         onClose={() => setShowBookingConfirmation(false)}
+      />
+
+      {/* Complete Booking Modal */}
+      <CompleteBookingModal
+        isOpen={showCompleteBookingModal}
+        tripData={data}
+        onClose={() => setShowCompleteBookingModal(false)}
+      />
+
+      {/* Share Modal */}
+      <ShareModal
+        isOpen={showShareModal}
+        shareData={shareData}
+        onClose={() => setShowShareModal(false)}
       />
     </div>
   );

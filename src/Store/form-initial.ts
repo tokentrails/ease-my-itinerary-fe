@@ -1,6 +1,6 @@
 export const FormInitial = {
-  source: "Chikkamagaluru",
-  destination: "Goa",
+  source: "",
+  destination: "",
   start_date: "",
   end_date: "",
   budget: "",

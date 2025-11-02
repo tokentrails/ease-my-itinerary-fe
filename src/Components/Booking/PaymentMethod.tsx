@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { CreditCard, Smartphone } from 'lucide-react';
+import { CreditCard, Smartphone, AlertCircle } from 'lucide-react';
+import { validateCardNumber } from '../../utils/validation';
 
 interface PaymentMethodProps {
   paymentMethod: 'credit_card' | 'upi';
@@ -35,16 +36,30 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
   upiId,
   setUpiId,
 }) => {
+  const [cardError, setCardError] = React.useState<string>('');
   const months = Array.from({ length: 12 }, (_, i) => i + 1);
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 10 }, (_, i) => currentYear + i);
+
+  const handleCardNumberChange = (value: string) => {
+    const cleanedValue = value.replace(/\s/g, '');
+    setCardNumber(cleanedValue);
+    
+    // Validate card number in real-time
+    if (cleanedValue) {
+      const validation = validateCardNumber(cleanedValue);
+      setCardError(validation.isValid ? '' : validation.error);
+    } else {
+      setCardError('');
+    }
+  };
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.3 }}
-      className="bg-white rounded-lg shadow-md p-6"
+      className="bg-white rounded-lg md:shadow-md md:p-6"
     >
       <h2 className="text-xl font-bold mb-6 text-gray-900">Payment Method</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -116,7 +131,7 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
         <motion.div
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: 'auto' }}
-          className="mt-6 pt-6 border-t border-gray-200 space-y-4"
+          className="mt-6 pt-6 border-t    space-y-4"
         >
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -138,11 +153,19 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
             <input
               type="text"
               value={cardNumber}
-              onChange={(e) => setCardNumber(e.target.value.replace(/\s/g, ''))}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              onChange={(e) => handleCardNumberChange(e.target.value)}
+              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                cardError ? 'border-red-500 bg-red-50' : 'border-gray-300'
+              }`}
               placeholder="1234 5678 9012 3456"
-              maxLength={16}
+              maxLength={19}
             />
+            {cardError && (
+              <div className="mt-2 flex items-center gap-2 text-red-600 text-sm">
+                <AlertCircle size={16} />
+                <span>{cardError}</span>
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-3 gap-4">

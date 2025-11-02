@@ -74,9 +74,9 @@ const TravelerDetails: React.FC<TravelerDetailsProps> = ({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.1 }}
-      className="bg-white rounded-lg shadow-md p-6"
+      className="md:bg-white bg-white rounded-lg md:shadow-md md:p-6"
     >
-      <h2 className="text-xl font-bold mb-6 text-gray-900">Traveler Details</h2>
+      <h2 className="text-xl font-bold mb-2  md:mb-6 text-gray-900">Traveler Details</h2>
       <div className="space-y-4">
         {travelers.map((traveler, index) => (
           <motion.div

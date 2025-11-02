@@ -24,15 +24,13 @@ const TimeLine = () => {
 };
 const ActivityList = (props: ActivityProps) => {
   const { activity } = props;
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
   // event wrapper may have optional activity; this component is only rendered for activity events
   if (!activity.activity) return null;
   return (
     <div
       className="flex flex-row  w-full cursor-pointer  border-gray-300"
-      onClick={() => {
-        setOpen(!open);
-      }}
+
     >
       <div className="w-[45px] ">
         <TimeLine />
@@ -69,15 +67,7 @@ const ActivityList = (props: ActivityProps) => {
             </div>
           </div>
 
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.25, ease: "easeInOut" }}
-            className="text-sm"
-            style={{ color: '#2093EF' }}
-          >
-            {open ? "Show less" : "Details"}
-          </motion.p>
+          
         </div>
 
         <motion.div

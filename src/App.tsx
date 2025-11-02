@@ -3,6 +3,7 @@ import Header from "./Components/Header";
 import HomePage from "./Pages/HomePage";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import ProfilePage from "./Pages/Profile";
+import BookingConfirmation from "./Pages/BookingConfirmation";
 
 import { APIProvider } from "@vis.gl/react-google-maps";
 import { useEffect, useState } from "react";
@@ -14,7 +15,6 @@ import refreshToken from "./utils/refreshLogin";
 import { useDispatch } from "react-redux";
 import DestinationPage from "./Pages/Destination";
 import ItineraryInfo from "./Components/Itinerary/itineraryInfo";
-import ConfirmBooking from "./Pages/ConfirmBooking";
 function App() {
   const apiKey: string = process.env.REACT_APP_GOOGLE_API || "";
   const dispatch = useDispatch()
@@ -71,7 +71,8 @@ function App() {
               <Route path="/itinerary" element={<ItineraryInfo />} />
               <Route path="/destination" element={<DestinationPage />} />
               <Route path="/profile" element={<ProfilePage />} />
-              <Route path="/confirm-booking" element={<ConfirmBooking />} />
+              <Route path="/booking-confirmation" element={<BookingConfirmation />} />
+              <Route path="/share/:shareCode" element={<ItineraryInfo />} />
             </Routes>
           </BrowserRouter>
         </motion.div>

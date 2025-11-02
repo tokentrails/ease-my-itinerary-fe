@@ -104,6 +104,7 @@ const Login = () => {
           showToast("Login successful.", "success");
         })
         .catch((err) => {
+          console.log("Login error:", err.message);
           showToast("Failed to login.", "error");
         })
         .finally(() => {

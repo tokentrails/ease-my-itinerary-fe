@@ -1,17 +1,20 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import SendIcon from '@mui/icons-material/Send';
-import CloseIcon from '@mui/icons-material/Close';
-import SmartToyIcon from '@mui/icons-material/SmartToy';
-import { v4 as uuidv4 } from 'uuid';
-import { useSelector } from 'react-redux';
-import { UsetInfo } from '../../Store/user-slice';
+import React, { useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "motion/react";
+import SendIcon from "@mui/icons-material/Send";
+import CloseIcon from "@mui/icons-material/Close";
+import SmartToyIcon from "@mui/icons-material/SmartToy";
+import { v4 as uuidv4 } from "uuid";
+import { useSelector } from "react-redux";
+import { UsetInfo } from "../../Store/user-slice";
+import DOMPurify from "dompurify";
+import { marked } from "marked";
 
 interface Message {
   id: string;
   text: string;
-  sender: 'user' | 'ai';
+  sender: "user" | "ai";
   timestamp: Date;
+  htmlContent?: string;
 }
 
 interface ChatInterfaceProps {
@@ -19,14 +22,24 @@ interface ChatInterfaceProps {
   onClose?: () => void;
 }
 
-const ChatInterface: React.FC<ChatInterfaceProps> = ({ isOpen = false, onClose }) => {
+const ChatInterface: React.FC<ChatInterfaceProps> = ({
+  isOpen = false,
+  onClose,
+}) => {
   const [isModalOpen, setIsModalOpen] = useState(isOpen);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [inputValue, setInputValue] = useState('');
+  const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  const [sessionId, setSessionId] = useState<string>('');
+  const [sessionId, setSessionId] = useState<string>("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const userInfo = useSelector(UsetInfo);
+
+  // Convert markdown to HTML
+  const convertMarkdownToHtml = async (text: string): Promise<string> => {
+    const html = await marked(text);
+    return DOMPurify.sanitize(html);
+  };
 
   // Initialize session ID on component mount
   useEffect(() => {
@@ -46,7 +59,20 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ isOpen = false, onClose }
   };
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInputValue(e.target.value);
+
+    // Auto-grow textarea
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      const scrollHeight = textareaRef.current.scrollHeight;
+      const maxHeight = 500; // Maximum 5 lines
+      textareaRef.current.style.height =
+        Math.min(scrollHeight, maxHeight) + "px";
+    }
   };
 
   useEffect(() => {
@@ -59,72 +85,81 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ isOpen = false, onClose }
     const userMessage: Message = {
       id: Date.now().toString(),
       text: inputValue,
-      sender: 'user',
+      sender: "user",
       timestamp: new Date(),
     };
 
-    setMessages(prev => [...prev, userMessage]);
-    setInputValue('');
+    setMessages((prev) => [...prev, userMessage]);
+    setInputValue("");
     setIsTyping(true);
 
     try {
       const payload = {
         session_id: sessionId,
         message: inputValue,
-        event_type: 'user_message',
+        event_type: "user_message",
         payload: {
           context: {
-            channel: 'web',
-            locale: 'en-IN',
+            channel: "web",
+            locale: "en-IN",
           },
         },
         metadata: {
           debug: false,
-          client_version: 'web-1.0.0',
+          client_version: "web-1.0.0",
         },
       };
 
       const response = await fetch(
-        'https://ease-my-itinerary-703138722646.us-central1.run.app/api/v1/agent/chat',
+        "https://ease-my-itinerary-703138722646.us-central1.run.app/api/v1/agent/chat",
         {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${userInfo.access_token}`,
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${userInfo.access_token}`,
           },
           body: JSON.stringify(payload),
         }
       );
 
       if (!response.ok) {
-        throw new Error('Failed to get response from AI');
+        throw new Error("Failed to get response from AI");
       }
 
       const data = await response.json();
 
+      const aiMessageText =
+        data.data?.text ||
+        "Sorry, I could not understand that. Could you please rephrase?";
+      const htmlContent = await convertMarkdownToHtml(aiMessageText);
+
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: data.data?.text || 'Sorry, I could not understand that. Could you please rephrase?',
-        sender: 'ai',
+        text: aiMessageText,
+        sender: "ai",
         timestamp: new Date(),
+        htmlContent,
       };
-      setMessages(prev => [...prev, aiMessage]);
+      setMessages((prev) => [...prev, aiMessage]);
     } catch (error) {
-      console.error('Chat API error:', error);
+      console.error("Chat API error:", error);
+      const errorText = "Sorry, I encountered an error. Please try again.";
+      const htmlContent = await convertMarkdownToHtml(errorText);
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: 'Sorry, I encountered an error. Please try again.',
-        sender: 'ai',
+        text: errorText,
+        sender: "ai",
         timestamp: new Date(),
+        htmlContent,
       };
-      setMessages(prev => [...prev, errorMessage]);
+      setMessages((prev) => [...prev, errorMessage]);
     } finally {
       setIsTyping(false);
     }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
     }
@@ -137,15 +172,16 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ isOpen = false, onClose }
         initial={{ scale: 0, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.3 }}
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.95 }}
+        whileHover={{ scale: 1 }}
+        whileTap={{ scale: 1 }}
         onClick={handleOpen}
         className={`fixed bottom-6 right-6 p-4 text-white rounded-full shadow-lg z-40 transition-all ${
-          isModalOpen ? 'hidden' : 'flex items-center justify-center'
+          isModalOpen ? "hidden" : "flex items-center justify-center"
         }`}
-        style={{ backgroundColor: '#2093EF' }}
+        style={{ backgroundColor: "#2093EF" }}
       >
-        <SmartToyIcon sx={{ fontSize: '28px' }} />
+
+        Generate Itinary with Chat AI
       </motion.button>
 
       {/* Modal Overlay */}
@@ -158,20 +194,20 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ isOpen = false, onClose }
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
               onClick={handleClose}
-              className="fixed inset-0 z-100 bg-opacity-50  backdrop-blur-sm"
+              className="fixed inset-0 z-100 bg-opacity-50  backdrop-blur-xs"
             />
-            
+
             {/* Modal Content */}
             <motion.div
               initial={{ opacity: 0, scale: 0.8, y: 100 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.8, y: 100 }}
-              transition={{ type: 'spring', damping: 25, stiffness: 400 }}
+              transition={{ type: "spring", damping: 25, stiffness: 400 }}
               className="fixed inset-0 flex items-end md:items-center justify-center z-500 p-4"
             >
               <motion.div
                 className="flex flex-col h-[90vh] md:h-[80vh] w-full md:w-[60vw] bg-white rounded-t-3xl md:rounded-3xl shadow-2xl border border-gray-100 overflow-hidden"
-                style={{ boxShadow: '0 20px 60px rgba(32, 147, 239, 0.15)' }}
+                style={{ boxShadow: "0 20px 60px rgba(32, 147, 239, 0.15)" }}
               >
                 {/* Header with Close Button */}
                 <motion.div
@@ -179,11 +215,13 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ isOpen = false, onClose }
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ delay: 0.1 }}
                   className="flex items-center justify-between p-4 text-white"
-                  style={{ backgroundColor: '#2093EF' }}
+                  style={{ backgroundColor: "#2093EF" }}
                 >
                   <div>
                     <h2 className="text-xl font-bold">AI Travel Assistant</h2>
-                    <p className="text-sm opacity-95">Ask me anything about your trip!</p>
+                    <p className="text-sm opacity-95">
+                      Ask me anything about your trip!
+                    </p>
                   </div>
                   <motion.button
                     whileHover={{ scale: 1.1 }}
@@ -191,7 +229,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ isOpen = false, onClose }
                     onClick={handleClose}
                     className="p-1 hover:bg-white hover:bg-opacity-20 rounded-lg transition-colors"
                   >
-                    <CloseIcon sx={{ fontSize: '24px' }} />
+                    <CloseIcon sx={{ fontSize: "24px" }} />
                   </motion.button>
                 </motion.div>
 
@@ -215,10 +253,10 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ isOpen = false, onClose }
                           Plan Your Next Adventure
                         </h3>
                         <p className="text-gray-600 mb-6">
-                          Get personalized travel recommendations tailored to your preferences
+                          Get personalized travel recommendations tailored to
+                          your preferences
                         </p>
                       </div>
-                     
                     </motion.div>
                   ) : (
                     <AnimatePresence>
@@ -229,19 +267,41 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ isOpen = false, onClose }
                           animate={{ opacity: 1, y: 0, scale: 1 }}
                           exit={{ opacity: 0, scale: 0.95 }}
                           transition={{ duration: 0.3 }}
-                          className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                          className={`flex ${
+                            message.sender === "user"
+                              ? "justify-end"
+                              : "justify-start"
+                          }`}
                         >
                           <div
                             className={`max-w-xs lg:max-w-md px-4 py-3 rounded-lg ${
-                              message.sender === 'user'
-                                ? 'text-white rounded-br-none'
-                                : 'bg-gray-100 text-gray-900 rounded-bl-none'
+                              message.sender === "user"
+                                ? "text-white rounded-br-none"
+                                : "bg-gray-100 text-gray-900 rounded-bl-none"
                             }`}
-                            style={message.sender === 'user' ? { backgroundColor: '#2093EF' } : {}}
+                            style={
+                              message.sender === "user"
+                                ? { backgroundColor: "#2093EF" }
+                                : {}
+                            }
                           >
-                            <p className="text-sm leading-relaxed">{message.text}</p>
+                            {message.sender === "user" ? (
+                              <p className="text-sm leading-relaxed">
+                                {message.text}
+                              </p>
+                            ) : (
+                              <div
+                                className="text-sm leading-relaxed prose prose-sm max-w-none prose-p:m-0 prose-p:mb-2 prose-headings:m-0 prose-headings:mb-2 prose-headings:font-semibold prose-ul:m-0 prose-ul:mb-2 prose-li:m-0 prose-li:p-0 prose-strong:font-semibold prose-em:italic"
+                                dangerouslySetInnerHTML={{
+                                  __html: message.htmlContent || message.text,
+                                }}
+                              />
+                            )}
                             <p className="text-xs opacity-70 mt-1">
-                              {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              {message.timestamp.toLocaleTimeString([], {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
                             </p>
                           </div>
                         </motion.div>
@@ -267,12 +327,20 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ isOpen = false, onClose }
                             />
                             <motion.div
                               animate={{ scale: [1, 1.2, 1] }}
-                              transition={{ duration: 0.6, repeat: Infinity, delay: 0.2 }}
+                              transition={{
+                                duration: 0.6,
+                                repeat: Infinity,
+                                delay: 0.2,
+                              }}
                               className="w-2 h-2 bg-gray-400 rounded-full"
                             />
                             <motion.div
                               animate={{ scale: [1, 1.2, 1] }}
-                              transition={{ duration: 0.6, repeat: Infinity, delay: 0.4 }}
+                              transition={{
+                                duration: 0.6,
+                                repeat: Infinity,
+                                delay: 0.4,
+                              }}
                               className="w-2 h-2 bg-gray-400 rounded-full"
                             />
                           </div>
@@ -287,23 +355,25 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ isOpen = false, onClose }
                 <div className="p-4 border-t border-gray-200 bg-white">
                   <div className="flex items-end space-x-2">
                     <motion.textarea
-                      whileFocus={{ scale: 1.02 }}
+                      whileFocus={{ scale: 1 }}
+                      ref={textareaRef}
                       value={inputValue}
-                      onChange={(e) => setInputValue(e.target.value)}
+                      onChange={handleTextareaChange}
                       onKeyPress={handleKeyPress}
                       placeholder="Type your message..."
-                      className="flex-1 resize-none rounded-xl border border-gray-300 px-4 py-2 focus:outline-none focus:border-transparent"
-                      style={{ 
-                        boxShadow: 'none',
-                        outlineColor: 'transparent'
+                      className="flex-1 overflow-hidden rounded-xl border border-gray-300 px-4 py-2 focus:outline-none focus:border-transparent"
+                      style={{
+                        boxShadow: "none",
+                        outlineColor: "transparent",
                       }}
                       onFocus={(e) => {
-                        e.currentTarget.style.boxShadow = '0 0 0 2px rgba(32, 147, 239, 0.2)';
-                        e.currentTarget.style.borderColor = '#2093EF';
+                        e.currentTarget.style.boxShadow =
+                          "0 0 0 2px rgba(32, 147, 239, 0.2)";
+                        e.currentTarget.style.borderColor = "#2093EF";
                       }}
                       onBlur={(e) => {
-                        e.currentTarget.style.boxShadow = 'none';
-                        e.currentTarget.style.borderColor = '#d1d5db';
+                        e.currentTarget.style.boxShadow = "none";
+                        e.currentTarget.style.borderColor = "#d1d5db";
                       }}
                       rows={1}
                     />
@@ -313,7 +383,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ isOpen = false, onClose }
                       onClick={handleSendMessage}
                       disabled={!inputValue.trim()}
                       className="p-2 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all flex-shrink-0"
-                      style={{ backgroundColor: '#2093EF' }}
+                      style={{ backgroundColor: "#2093EF" }}
                     >
                       <SendIcon />
                     </motion.button>

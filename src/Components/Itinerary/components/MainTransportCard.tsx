@@ -46,7 +46,7 @@ interface MainTransportCardProps {
 
 
 const MainTransportCard: React.FC<MainTransportCardProps> = ({ transport }) => {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
   const toggleOpen = () => setOpen((s) => !s);
   const onKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" || e.key === " ") toggleOpen();

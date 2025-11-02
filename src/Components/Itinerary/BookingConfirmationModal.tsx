@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, CheckCircle, MapPin, Calendar, Users, DollarSign, Briefcase } from 'lucide-react';
@@ -24,7 +25,7 @@ const BookingConfirmationModal: React.FC<BookingConfirmationModalProps> = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black bg-opacity-50 z-40"
+            className="fixed inset-0 bg-black bg-opacity-50 z-100"
             onClick={onClose}
           />
 
@@ -33,7 +34,7 @@ const BookingConfirmationModal: React.FC<BookingConfirmationModalProps> = ({
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+            className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-100 border-2 border-red-500 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
           >
             <div className="bg-white rounded-xl shadow-2xl p-8">
               {/* Close Button */}
@@ -41,7 +42,7 @@ const BookingConfirmationModal: React.FC<BookingConfirmationModalProps> = ({
                 onClick={onClose}
                 className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-full transition-colors"
               >
-                <X className="w-6 h-6 text-gray-500" />
+                <X className="w-6 h-6 text-white" />
               </button>
 
               {/* Success Header */}
@@ -158,13 +159,41 @@ const BookingConfirmationModal: React.FC<BookingConfirmationModalProps> = ({
                     </div>
                   </motion.div>
                 )}
+
+                {/* QR Code Section */}
+                {bookingData.qr_code && (
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.8 }}
+                    className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-4 border-2 border-purple-200"
+                  >
+                    <div className="flex flex-col items-center gap-3">
+                      <p className="text-sm text-gray-600 font-semibold">🎫 E-Ticket QR Code</p>
+                      <div className="bg-white p-3 rounded-lg border border-purple-200">
+                        {bookingData.qr_code.startsWith('data:') || bookingData.qr_code.startsWith('http') ? (
+                          <img
+                            src={bookingData.qr_code}
+                            alt="E-Ticket QR Code"
+                            className="w-32 h-32 object-contain"
+                          />
+                        ) : (
+                          <div className="w-32 h-32 bg-gray-100 rounded flex items-center justify-center text-gray-500 text-xs">
+                            QR Code
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-xs text-gray-600 text-center">Show this QR code at check-in</p>
+                    </div>
+                  </motion.div>
+                )}
               </div>
 
               {/* Action Buttons */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.8 }}
+                transition={{ delay: 0.9 }}
                 className="flex gap-4"
               >
                 <button
