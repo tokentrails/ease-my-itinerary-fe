@@ -15,14 +15,14 @@ import { resetTrip } from "../../Store/itinerary-slice";
 
 interface ItinaryFormProps {
   onSubmit: () => void;
-  Chat:boolean
+  Chat?:boolean
 }
 const ItinaryForm = (props: ItinaryFormProps) => {
   const { onSubmit } = props;
   const dispatch = useDispatch();
   const [errors, setErrors] = useState<any>({});
   const [touched, setTouched] = useState<any>({});
-  const [openChat,setOpenChat]=useState(false)
+
   const formValues = useSelector(getFormValues);
 
   const handleFieldChange = (field: string, value: any) => {

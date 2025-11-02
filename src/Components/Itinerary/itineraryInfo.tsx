@@ -29,7 +29,7 @@ import MainTransportCard from "./components/MainTransportCard";
 import Skeleton from "../../customComponents/customSkeleton";
 import ItineraryBreakDown from "./itineraryBreakDown";
 import ChatBot from "../chatWithAi";
-import type { Trip } from "../../Helper/ApiResponseInterface";
+
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { getFormValues } from "../../Store/form-slice";

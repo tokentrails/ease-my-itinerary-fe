@@ -8,7 +8,7 @@ import {
 } from "react";
 import { MessageCircle, X, Send } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import type { Trip } from "../../Helper/ApiResponseInterface";
+
 import { apiCaller } from "../../utils/apiCall";
 import { useSelector } from "react-redux";
 import { UsetInfo } from "../../Store/user-slice";

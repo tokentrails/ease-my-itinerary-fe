@@ -219,7 +219,7 @@ const CustomeSlider = (props: Props) => {
           {items.map((item, index) => (
             <div
               key={index}
-              ref={(el) => (cardsRef.current[index] = el)}
+              ref={(el) => { cardsRef.current[index] = el; }}
               className="absolute h-full shadow-2xl will-change-transform"
               style={{
                 pointerEvents: "none",

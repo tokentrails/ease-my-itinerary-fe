@@ -73,24 +73,11 @@ export interface TripEvent {
   meal?: MealEvent;
 }
 
-interface Topic {
-  topic: string;
-  summary: string;
-  key_points: string[];
-  sources: number[];
-  confidence: number;
-}
 
-interface Topics {
-  attractions: Topic;
-  food: Topic;
-}
 
-interface Summary {
-  summary: string;
-  topics: Topics;
-  suggestions: Record<string, unknown>;
-}
+
+
+
 
 export interface DestinationEvent {
   name: string;
@@ -99,7 +86,6 @@ export interface DestinationEvent {
   significance: string;
 }
 
-export interface TripEvent {
 
 export interface Weather {
   date: string;

@@ -1,13 +1,14 @@
-import React, { useState } from "react";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import moment from "moment";
-import type { DayPlan, Event } from "../../../Helper/ApiResponseInterface";
-import { Utensils, MapPin, Salad, Star, AlertCircle, Activity as LucideActivity } from "lucide-react";
+import type { DayPlan } from "../../../Helper/ApiResponseInterface";
+import { Utensils, Star, AlertCircle } from "lucide-react";
 import { motion } from "motion/react";
-import { capitalizeFirstLetter } from "../../../utils/constants";
+
 // Removed MUI icons; using lucide-react equivalents above
 
 interface Props {
-  meal: Event;
+  meal: any;
   dayInfo: DayPlan;
   index: number;
 }
@@ -28,7 +29,7 @@ const TimeLine = () => {
 
 const MealsCard = (props: Props) => {
   const { meal } = props;
-  const [open, setOpen] = useState(true);
+  const open = true;
 
 
   return (
@@ -38,7 +39,7 @@ const MealsCard = (props: Props) => {
       tabIndex={0}
 
       role="button"
-      aria-expanded={open}
+
     >
       <div className="w-[45px] ">
         <TimeLine />

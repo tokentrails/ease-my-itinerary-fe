@@ -13,18 +13,16 @@ const HomePage = () => {
   const navigate = useNavigate();
   const Cities: iSliderItem[] = guideCities;
   const [search, setSearch] = useState("");
-  const CreateItinerary = () => {
-    navigate("/Itinerary");
-  };
+
   const Opendestination = (destination: string) => {
     navigate("/Destination" + "?destination=" + destination);
   };
   return (
     <div>
       <div className="bg-gradient-to-br from-blue-600 via-blue-500 to-cyan-400 text-white pt-6 pb-12">
-        <ItinaryForm onSubmit={()=>{
+        <ItinaryForm onSubmit={() => {
           navigate("/itinerary?fromForm=true");
-        }}/>
+        } } />
       </div>
 
       <div className="flex w-[100vw]  pb-5 bg-white flex-col items-center justify-between sm:py-2 md:py-3 py-10 sm:px-2 md:px-3 px-3  ">

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { motion } from "motion/react";
 import { MapPin, Navigation } from "lucide-react";
 import { useState } from "react";
@@ -29,7 +30,7 @@ const RouteMap = ({ dayPlans }: RouteMapProps) => {
     <div className="space-y-4">
       {/* Day Selector */}
       <div className="flex gap-2 mt-3 overflow-x-auto pb-2">
-        {dayPlans.map((dayPlan, index) => (
+        {dayPlans.map((_:any, index:number) => (
           <motion.button
             key={index}
             whileHover={{ scale: 1.02 }}

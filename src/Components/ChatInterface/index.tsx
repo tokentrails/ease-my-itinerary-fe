@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import SendIcon from "@mui/icons-material/Send";
 import CloseIcon from "@mui/icons-material/Close";
-import SmartToyIcon from "@mui/icons-material/SmartToy";
 import { v4 as uuidv4 } from "uuid";
 import { useSelector } from "react-redux";
 import { UsetInfo } from "../../Store/user-slice";

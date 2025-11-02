@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState } from "react";
 import moment from "moment";
 
 import { Clock, AlertTriangle, Car } from "lucide-react";
@@ -33,7 +32,8 @@ const TimeLine = () => {
 
 const TransportCard = (props: Props) => {
   const { transport } = props;
-  const [open, setOpen] = useState(true);
+  const open = true;
+
   
   return (
     <div
