@@ -13,9 +13,13 @@ import {
   Map,
 } from "lucide-react";
 import { ToggleButtonGroup, ToggleButton, Box } from "@mui/material";
+import { useDispatch, useSelector } from "react-redux";
 
 import { apiCaller } from "../../utils/apiCall";
 import Loader from "../../Components/Itinerary/loader";
+import ItinaryForm from "../../Components/Form";
+import { updateFormField } from "../../Store/form-slice";
+import { UsetInfo } from "../../Store/user-slice";
 
 const loadingMessages = [
   "Exploring hidden gems in the destination...",
@@ -42,16 +46,16 @@ interface CostBreakdown {
   unit: string;
 }
 
-
-
 export default function DestinationGuide() {
   const [activeTab, setActiveTab] = useState("overview");
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [showForm, setShowForm] = useState(false);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
-  
+  const dispatch = useDispatch();
+  const userInfo = useSelector(UsetInfo);
 
   const [tabs, setTabs] = useState<any[]>([]);
   const [destinationData, setDestinationData] = useState<any | null>(null);
@@ -104,11 +108,11 @@ export default function DestinationGuide() {
 
   useEffect(() => {
     getDestinationinfo();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   useEffect(() => {
     if (destinationData) {
       console.log("Destination Data:", destinationData.summary);
-
 
       const tabs_ = [
         { id: "overview", label: "Overview", icon: Map },
@@ -135,13 +139,36 @@ export default function DestinationGuide() {
   }, []);
 
   const handleGenerateItinerary = () => {
-    navigate("/itinerary-form", {
-      state: {
-        destination: destinationData.destination,
-        recommendedDuration:
-          destinationData.suggestions.recommended_duration.optimal_days,
-      },
-    });
+    // Check if user is authenticated
+    if (!userInfo?.access_token) {
+      navigate("/login");
+      return;
+    }
+
+    // Prefill form with destination data
+    dispatch(
+      updateFormField({
+        field: "destination",
+        value: destinationData.destination,
+      })
+    );
+
+    // Prefill budget with comfort level
+    const comfortBudget = destinationData.suggestions.budget_range.comfort;
+    dispatch(
+      updateFormField({
+        field: "budget",
+        value: comfortBudget ? String(comfortBudget) : "",
+      })
+    );
+
+    // Show the form
+    setShowForm(true);
+  };
+
+  const handleFormSubmit = () => {
+    // Form will handle the submission and navigate to itinerary
+    navigate("/itinerary-form");
   };
 
   const scrollToTop = () => {
@@ -167,7 +194,7 @@ export default function DestinationGuide() {
               positionClasses="top-1/2 right-2 max-w-[300px] md:max-w-[350px] md:top-5 md:right-5 lg:top-20 lg:right-[35%] from-white to-gray-50 shadow-2xl backdrop-blur-sm "
             />
           </motion.div>
-        ) :  destinationData ? (
+        ) : destinationData ? (
           <div>
             <div>
               <div className="bg-white ">
@@ -205,7 +232,6 @@ export default function DestinationGuide() {
                           style={{ color: "#2093EF" }}
                         />
                         <span>
-                          
                           {Math.round(
                             (destinationData.suggestions.budget_range.economy +
                               destinationData.suggestions.budget_range.comfort +
@@ -224,15 +250,27 @@ export default function DestinationGuide() {
                       <span>17-26°C current</span>
                     </div>
                   </div>
-
+                </div>
+              </div>
+              {!showForm ? (
+                <div className="max-w-5xl mx-auto px-6">
                   <button
                     onClick={handleGenerateItinerary}
-                    className="mt-8 px-6 py-3 bg-[#2093EF] text-white rounded-lg hover:bg-[#1a7ac7] transition-colors"
+                    className="mt-4 px-6 py-3 bg-[#2093EF] text-white rounded-lg hover:bg-[#1a7ac7] transition-colors font-medium"
                   >
                     Generate Itinerary
                   </button>
                 </div>
-              </div>
+              ) : (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="bg-gradient-to-br from-blue-600 via-blue-500 to-cyan-400 text-white pt-2 pb-2"
+                >
+                  <ItinaryForm onSubmit={handleFormSubmit} />
+                </motion.div>
+              )}
               <Box className="bg-white sticky top-0 z-10">
                 <div className="max-w-5xl mx-auto px-6 py-4">
                   <ToggleButtonGroup
@@ -677,33 +715,34 @@ export default function DestinationGuide() {
                 {/* Tips Tab */}
                 {activeTab === "tips" && (
                   <div className="space-y-8 mt-5 animate-fadeIn">
-                    {destinationData.suggestions.local_tips && <div className="">
-                      <h2 className="text-xl font-medium text-gray-900 mb-6">
-                        Essential Travel Tips
-                      </h2>
-                      <div className="space-y-4">
-                        {destinationData.suggestions.local_tips.map(
-                          (tip: any, idx: number) => (
-                            <div
-                              key={idx}
-                              className="flex gap-4 items-start p-4 border-l-2"
-                              style={{ borderColor: "#2093EF" }}
-                            >
+                    {destinationData.suggestions.local_tips && (
+                      <div className="">
+                        <h2 className="text-xl font-medium text-gray-900 mb-6">
+                          Essential Travel Tips
+                        </h2>
+                        <div className="space-y-4">
+                          {destinationData.suggestions.local_tips.map(
+                            (tip: any, idx: number) => (
                               <div
-                                className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium text-white"
-                                style={{ backgroundColor: "#2093EF" }}
+                                key={idx}
+                                className="flex gap-4 items-start p-4 border-l-2"
+                                style={{ borderColor: "#2093EF" }}
                               >
-                                {idx + 1}
+                                <div
+                                  className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium text-white"
+                                  style={{ backgroundColor: "#2093EF" }}
+                                >
+                                  {idx + 1}
+                                </div>
+                                <p className="text-gray-700 text-sm leading-relaxed">
+                                  {tip}
+                                </p>
                               </div>
-                              <p className="text-gray-700 text-sm leading-relaxed">
-                                {tip}
-                              </p>
-                            </div>
-                          )
-                        )}
+                            )
+                          )}
+                        </div>
                       </div>
-                    </div>
-}
+                    )}
                   </div>
                 )}
               </div>

@@ -12,6 +12,8 @@ import { getFormValues, updateFormField } from "../../Store/form-slice";
 
 import { validationSchema } from "./formikSetup";
 import { resetTrip } from "../../Store/itinerary-slice";
+import { UsetInfo } from "../../Store/user-slice";
+import AuthRequiredModal from "../AuthRequiredModal";
 
 interface ItinaryFormProps {
   onSubmit: () => void;
@@ -22,8 +24,10 @@ const ItinaryForm = (props: ItinaryFormProps) => {
   const dispatch = useDispatch();
   const [errors, setErrors] = useState<any>({});
   const [touched, setTouched] = useState<any>({});
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   const formValues = useSelector(getFormValues);
+  const userInfo = useSelector(UsetInfo);
 
   const handleFieldChange = (field: string, value: any) => {
     dispatch(updateFormField({ field, value }));
@@ -33,6 +37,12 @@ const ItinaryForm = (props: ItinaryFormProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     e.stopPropagation();
+
+    // Check if user is authenticated
+    if (!userInfo?.access_token) {
+      setShowAuthModal(true);
+      return;
+    }
 
     try {
       // Validate form
@@ -205,6 +215,13 @@ const ItinaryForm = (props: ItinaryFormProps) => {
           
         </form>
       </div>
+
+      {/* Auth Required Modal */}
+      <AuthRequiredModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        feature="itinerary generation"
+      />
     </div>
   );
 };

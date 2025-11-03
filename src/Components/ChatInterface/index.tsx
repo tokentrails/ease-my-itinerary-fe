@@ -7,6 +7,7 @@ import { useSelector } from "react-redux";
 import { UsetInfo } from "../../Store/user-slice";
 import DOMPurify from "dompurify";
 import { marked } from "marked";
+import AuthRequiredModal from "../AuthRequiredModal";
 
 interface Message {
   id: string;
@@ -30,6 +31,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [sessionId, setSessionId] = useState<string>("");
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const userInfo = useSelector(UsetInfo);
@@ -54,6 +56,11 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   };
 
   const handleOpen = () => {
+    // Check if user is authenticated
+    if (!userInfo?.access_token) {
+      setShowAuthModal(true);
+      return;
+    }
     setIsModalOpen(true);
   };
 
@@ -393,6 +400,13 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
           </>
         )}
       </AnimatePresence>
+
+      {/* Auth Required Modal */}
+      <AuthRequiredModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        feature="chat interface"
+      />
     </>
   );
 };
