@@ -105,7 +105,7 @@ const Login = () => {
         })
         .catch((err) => {
           console.log("Login error:", err.message);
-          showToast("Failed to login.", "error");
+          showToast(err.message, "error");
         })
         .finally(() => {
           setIsLoading(false);
@@ -263,8 +263,8 @@ const Login = () => {
             </div>
           </form>
             for testing we have loaded a defult demo account with email and password 
-            <p>Email: demo01@gmail.com</p>
-            <p>Password: Demo@1234</p>
+            <p>Email: preethamcm@gmail.com</p>
+            <p>Password: ita7@semwulmV</p>
         </motion.div>
         <AnimatePresence>
           {!isRegister && (
