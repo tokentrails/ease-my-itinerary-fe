@@ -47,6 +47,18 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     setSessionId(uuidv4());
   }, []);
 
+  // Handle isOpen prop changes
+  useEffect(() => {
+    if (isOpen) {
+      // Check if user is authenticated
+      if (!userInfo?.access_token) {
+        setShowAuthModal(true);
+        return;
+      }
+      setIsModalOpen(true);
+    }
+  }, [isOpen, userInfo?.access_token]);
+
   // Reset session on modal close
   const handleClose = () => {
     setIsModalOpen(false);
@@ -62,6 +74,18 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       return;
     }
     setIsModalOpen(true);
+    
+    // Add initial welcome message if no messages exist
+    if (messages.length === 0) {
+      const welcomeMessage: Message = {
+        id: Date.now().toString(),
+        text: "👋 Welcome to AI Travel Assistant! I'm here to help you plan your perfect trip. You can ask me about:\n\n• Destination recommendations\n• Itinerary planning\n• Travel tips and best practices\n• Budget advice\n• Local attractions and activities\n• Travel dates and seasons\n\nWhat would you like to know about your next adventure?",
+        sender: "ai",
+        timestamp: new Date(),
+        htmlContent: "<p>👋 Welcome to AI Travel Assistant! I'm here to help you plan your perfect trip. You can ask me about:</p><ul><li>Destination recommendations</li><li>Itinerary planning</li><li>Travel tips and best practices</li><li>Budget advice</li><li>Local attractions and activities</li><li>Travel dates and seasons</li></ul><p>What would you like to know about your next adventure?</p>"
+      };
+      setMessages([welcomeMessage]);
+    }
   };
 
   const scrollToBottom = () => {
@@ -178,14 +202,37 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
         initial={{ scale: 0, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.3 }}
-        whileHover={{ scale: 1 }}
-        whileTap={{ scale: 1 }}
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.95 }}
         onClick={handleOpen}
-        className={`fixed bottom-6 right-6 p-4 text-white rounded-full shadow-lg z-40 transition-all ${
+        className={`fixed bottom-6 right-6 p-4 text-white rounded-full border-4 border-amber-600 shadow-lg z-40 transition-all ${
           isModalOpen ? "hidden" : "flex items-center justify-center"
         }`}
         style={{ backgroundColor: "#2093EF" }}
       >
+        {/* Animated pulsing ring */}
+        <motion.div
+          className="absolute inset-0 rounded-full border-2 border-amber-600"
+          animate={{ scale: [1, 1.3,1.3, 1], opacity: [1, 0,0,0] }}
+          transition={{ duration: 2, repeat: Infinity }}
+        />
+
+        {/* Animated spinning icon */}
+        <motion.svg
+          className="w-6 h-6 relative z-10 mr-2"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          animate={{ scale: [1, 1.2, 1] }}
+          transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+          />
+        </motion.svg>
 
         Generate Itinary with Chat AI
       </motion.button>
