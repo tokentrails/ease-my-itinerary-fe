@@ -55,8 +55,8 @@ const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const initialValues: FormValues = {
-    email: "koushik@gmail.com",
-    password: "Koushik@12345",
+    email: "",
+    password: "",
     first_name: "",
     last_name: "",
     phone: "",
@@ -262,6 +262,9 @@ const Login = () => {
               </button>
             </div>
           </form>
+            for testing we have loaded a defult demo account with email and password 
+            <p>Email: demo01@gmail.com</p>
+            <p>Password: Demo@1234</p>
         </motion.div>
         <AnimatePresence>
           {!isRegister && (
@@ -296,6 +299,7 @@ const Login = () => {
               </p>
             </motion.div>
           )}
+        
         </AnimatePresence>
       </motion.div>
     </AnimatePresence>
