@@ -37,6 +37,11 @@ const ActivityList = (props: ActivityProps) => {
       className="flex flex-row  w-full cursor-pointer  border-gray-300"
 
     >
+      <MapLocationModal
+        isOpen={showMapModal}
+        onClose={() => setShowMapModal(false)}
+        location={activity.activity.location}
+      />
       <div className="w-[45px] ">
         <TimeLine />
       </div>
@@ -146,11 +151,7 @@ const ActivityList = (props: ActivityProps) => {
       </motion.div>
 
       {/* Map Modal */}
-      <MapLocationModal
-        isOpen={showMapModal}
-        onClose={() => setShowMapModal(false)}
-        location={activity.activity.location}
-      />
+      
     </div>
   );
 };

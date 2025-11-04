@@ -49,8 +49,8 @@ const TransportCard = (props: Props) => {
       </div>
       <div className="flex-1">
         <div className="p-3  bg-white  rounded-xl">
-          <div className="flex items-center w-full justify-between">
-            <div className="flex flex-col  min-w-[200px]">
+          <div className="flex flex-col md:flex-row items-start md:items-center w-full justify-between gap-4">
+            <div className="flex flex-col">
               <p style={{ color: "#2093EF" }}>
                 {capitalizeFirstLetter(transport.transport!.mode)}
               </p>
@@ -62,7 +62,7 @@ const TransportCard = (props: Props) => {
             {transport.transport &&
             transport.transport.cost &&
             transport.transport.cost != 0 ? (
-              <div className="md:text-right flex items-end md:flex-col md:items-end w-full ">
+              <div className="flex items-end gap-4 md:gap-0 md:flex-col md:items-end w-full md:w-auto">
                 <p className="font-medium text-lg">
                   ₹{transport.transport!.cost.toFixed(2).toLocaleString()}
                 </p>
@@ -88,26 +88,26 @@ const TransportCard = (props: Props) => {
             transition={{ duration: 0.4, ease: "easeInOut" }}
             className="overflow-hidden"
           >
-            <div className="flex flex-col ">
-              <div className="flex items-center">
-                <div className="ml-2 ">
+            <div className="flex flex-col w-full">
+              <div className="flex items-start gap-3 w-full">
+                <div className="flex-1">
                   <p className=" font-regular text-black">
                     {transport.transport!.from_location.name}
                   </p>
-                  <p className=" text-gray-400">
+                  <p className=" text-gray-400 text-sm">
                     {transport.transport!.from_location.city},{" "}
                     {transport.transport!.from_location.state}
                   </p>
-                  <p style={{ color: "#2093EF" }}>
+                  <p style={{ color: "#2093EF" }} className="text-sm">
                     {moment(transport.start_time, "HH:mm").format("hh:mm a")}
                   </p>
                 </div>
               </div>
 
-              <div className="min-w-[100px]  relative min-h-[20px] mx-2">
+              <div className="min-w-[100px] relative min-h-[20px] mx-2 my-2">
                 <div className="absolute bg-white top-3"></div>
-                <div className="w-[120px] ml-3 h-[50px] border-l-2 border-dashed flex items-center  border-gray-500">
-                  <div className="flex items-center pl-2 w-[120px] ">
+                <div className="w-full md:w-[120px] h-[50px] border-l-2 border-dashed flex items-center border-gray-500">
+                  <div className="flex items-center pl-2">
                     <Clock className="w-5 h-5" color="#2093EF" />
                     <p
                       className="text-sm font-semibold ml-2"
@@ -118,16 +118,16 @@ const TransportCard = (props: Props) => {
                   </div>
                 </div>
               </div>
-              <div className="flex items-center">
-                <div className="ml-2 ">
+              <div className="flex items-start gap-3 w-full">
+                <div className="flex-1">
                   <p className=" font-regular text-black">
                     {transport.transport!.to_location.name}
                   </p>
-                  <p className=" text-gray-400">
+                  <p className=" text-gray-400 text-sm">
                     {transport.transport!.to_location.city},{" "}
                     {transport.transport!.to_location.state}
                   </p>
-                  <p style={{ color: "#2093EF" }}>
+                  <p style={{ color: "#2093EF" }} className="text-sm">
                     {moment(transport.end_time || "", "HH:mm").format(
                       "hh:mm a"
                     )}
