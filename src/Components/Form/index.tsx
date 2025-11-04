@@ -17,7 +17,7 @@ import AuthRequiredModal from "../AuthRequiredModal";
 
 interface ItinaryFormProps {
   onSubmit: () => void;
-  Chat?:boolean
+  Chat?: boolean;
 }
 const ItinaryForm = (props: ItinaryFormProps) => {
   const { onSubmit } = props;
@@ -154,8 +154,8 @@ const ItinaryForm = (props: ItinaryFormProps) => {
                 />
               </div>
             </div>
-            <div className="flex w-full md:w-[200px] ">
-              <div className="pl-2 w-full md:w-[100px]  md:border-r-[2px]   border-gray-200 ">
+            <div className="flex w-full md:w-[230px] ">
+              <div className="pl-2 w-full md:w-[150px]  md:border-r-[2px]   border-gray-200 ">
                 <FormSelect
                   value={formValues.meal_preference}
                   title={"Meal Type"}
@@ -166,7 +166,7 @@ const ItinaryForm = (props: ItinaryFormProps) => {
                   options={[
                     { label: "Vegan", value: "vegan" },
                     { label: "Veg", value: "vegetarian" },
-                    { label: "Non-Veg", value: "non-veg" },
+                    { label: "Non-Veg", value: "non-vegetarian" },
                   ]}
                   onSelectChange={function (value: string): void {
                     handleFieldChange("meal_preference", value);
@@ -210,9 +210,7 @@ const ItinaryForm = (props: ItinaryFormProps) => {
               </svg>
               Generate Itinerary Using AI
             </button>
-            
           </div>
-          
         </form>
       </div>
 
