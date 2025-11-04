@@ -16,7 +16,7 @@ import { useDispatch } from "react-redux";
 import DestinationPage from "./Pages/Destination";
 import ItineraryInfo from "./Components/Itinerary/itineraryInfo";
 function App() {
-  const apiKey: string = process.env.REACT_APP_GOOGLE_API || "";
+  const apiKey: string = import.meta.env.VITE_GOOGLE_API_KEY || "";
   const dispatch = useDispatch()
   const [loading, setLoading] = useState(true);
   useEffect(()=>{

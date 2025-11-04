@@ -81,7 +81,7 @@ const MapLocationModal = ({
             height="100%"
             style={{ border: 0 }}
             loading="lazy"
-            src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyAEZU6stL1Xrpcinreotf2KBMO3ovQoljQ&q=${location.latitude},${location.longitude}`}
+            src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_API_KEY}&q=${location.latitude},${location.longitude}`}
           />
         </div>
 

@@ -467,7 +467,7 @@ const ItineraryInfo = () => {
                 messages={streamLoaderMessage}
               />
             )}
-            {!onlyView && !loadingStream && bookingStatus !== "confirmed" && (
+            {!onlyView && data && !loadingStream && bookingStatus !== "confirmed" && (
               <ChatBot
                 tripId={data?.id}
                 chats={[]}
