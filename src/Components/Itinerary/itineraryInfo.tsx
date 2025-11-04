@@ -439,6 +439,10 @@ const ItineraryInfo = () => {
     }
   }, [tripDataFromRedux]);
 
+  useEffect(() => {
+     window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
+
   return (
     <div className="relative w-full min-h-screen bg-gray-50">
       {errorInApiCall.hasError ? (

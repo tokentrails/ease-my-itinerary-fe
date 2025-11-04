@@ -168,7 +168,7 @@ export default function DestinationGuide() {
 
   const handleFormSubmit = () => {
     // Form will handle the submission and navigate to itinerary
-    navigate("/itinerary-form");
+    navigate("/itinerary?fromForm=true");
   };
 
   const scrollToTop = () => {
