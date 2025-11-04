@@ -4,7 +4,6 @@ import moment from "moment";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState, useCallback } from "react";
 import {
-
   Lightbulb,
   Star,
   Calendar,
@@ -66,6 +65,7 @@ const ItineraryInfo = () => {
   const [showShareModal, setShowShareModal] = useState(false);
   const [shareData, setShareData] = useState<any | null>(null);
   const [shareLoading, setShareLoading] = useState(false);
+
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [searchParams] = useSearchParams();
@@ -86,6 +86,9 @@ const ItineraryInfo = () => {
   ) => {
     setDayActiveTab(newValue);
   };
+
+
+
   const fetchSharedTripByCode = async (shareCode: string) => {
     setLoadingStream(true);
     try {
@@ -126,7 +129,7 @@ const ItineraryInfo = () => {
                 }
                 setDays(days_);
               }
-              setOnlyView(true)
+              setOnlyView(true);
               // Clear error when data is received successfully
               setErrorInApiCall({
                 hasError: false,
@@ -624,7 +627,6 @@ const ItineraryInfo = () => {
                           className="text-xl font-semibold mb-4 flex items-center gap-2"
                           style={{ color: "#2093EF" }}
                         >
-
                           Weather & Climate
                         </h2>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -690,7 +692,10 @@ const ItineraryInfo = () => {
                         <Tabs
                           value={mainActiveTab}
                           onChange={handleMainTabChange}
-                          aria-label="main tabs"
+                          variant="scrollable"
+                          scrollButtons
+                          allowScrollButtonsMobile
+                          aria-label="scrollable force tabs example main tabs"
                           sx={{
                             "& .MuiTabs-indicator": {
                               backgroundColor: "#2093EF",
@@ -732,12 +737,14 @@ const ItineraryInfo = () => {
                                 bgcolor: "background.paper",
                               }}
                             >
+                             
                               <Tabs
                                 value={dayActiveTab}
                                 onChange={handleDayTabChange}
                                 variant="scrollable"
-                                scrollButtons="auto"
-                                aria-label="day tabs"
+                                scrollButtons
+                                allowScrollButtonsMobile
+                                aria-label="scrollable force tabs example main tabs day tabs"
                                 sx={{
                                   "& .MuiTabs-indicator": {
                                     backgroundColor: "#2093EF",
@@ -1003,8 +1010,6 @@ const ItineraryInfo = () => {
                           </div>
                         </div>
                       ) : null}
-
-                     
                     </div>
 
                     {/* Bottom Padding */}
