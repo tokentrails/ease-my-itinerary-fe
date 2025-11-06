@@ -8,6 +8,7 @@ import { UsetInfo } from "../../Store/user-slice";
 import DOMPurify from "dompurify";
 import { marked } from "marked";
 import AuthRequiredModal from "../AuthRequiredModal";
+import { logEvent } from "../../firebase";
 
 interface Message {
   id: string;
@@ -74,7 +75,14 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       return;
     }
     setIsModalOpen(true);
-    
+
+    // Log analytics event for opening agent chat
+    logEvent('open_agent_chat', {
+      location: 'homepage',
+      session_id: sessionId,
+      user_id: userInfo?.id
+    });
+
     // Add initial welcome message if no messages exist
     if (messages.length === 0) {
       const welcomeMessage: Message = {

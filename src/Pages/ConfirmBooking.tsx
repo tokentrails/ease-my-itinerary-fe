@@ -1,13 +1,26 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { TripInfo } from '../Store/itinerary-slice';
 import BookingPage from '../Components/Booking';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
+import { logEvent } from '../firebase';
 
 const ConfirmBooking: React.FC = () => {
   const trip = useSelector(TripInfo);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Log analytics event when user proceeds to booking
+    if (trip && trip.destination) {
+      logEvent('begin_checkout', {
+        trip_id: trip.id,
+        destination: trip.destination,
+        source: trip.source,
+        value: trip.budget
+      });
+    }
+  }, [trip]);
 
   // Redirect to home if no trip data
   if (!trip || !trip.destination) {

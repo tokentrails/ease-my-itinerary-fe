@@ -41,6 +41,7 @@ import BookingConfirmationModal from "./BookingConfirmationModal";
 import CompleteBookingModal from "./CompleteBookingModal";
 import ShareModal from "./ShareModal";
 import RouteMap from "./components/RouteMap";
+import { logEvent } from "../../firebase";
 
 const ItineraryInfo = () => {
   const [data, setData] = useState<any | null>(null);
@@ -375,6 +376,17 @@ const ItineraryInfo = () => {
       if (response && response.data) {
         setShareData(response.data);
         setShowShareModal(true);
+
+        // Log analytics event for trip sharing
+        logEvent('share', {
+          content_type: 'trip',
+          item_id: id,
+          method: 'share_link',
+          share_code: response.data.share_code,
+          permission: response.data.permission,
+          expires_in_hours: 24
+        });
+
         const { showSuccessToast } = await import("../../utils/toastHelper");
         showSuccessToast("Share link created successfully!");
       }

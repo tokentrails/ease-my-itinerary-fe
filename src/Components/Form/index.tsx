@@ -14,6 +14,7 @@ import { validationSchema } from "./formikSetup";
 import { resetTrip } from "../../Store/itinerary-slice";
 import { UsetInfo } from "../../Store/user-slice";
 import AuthRequiredModal from "../AuthRequiredModal";
+import { logEvent } from "../../firebase";
 
 interface ItinaryFormProps {
   onSubmit: () => void;
@@ -49,6 +50,18 @@ const ItinaryForm = (props: ItinaryFormProps) => {
       await validationSchema.validate(formValues, { abortEarly: false });
       setErrors({});
       dispatch(resetTrip());
+
+      // Log analytics event for itinerary creation
+      logEvent('create_itinerary', {
+        source: formValues.source,
+        destination: formValues.destination,
+        traveler_count: formValues.traveler_count,
+        budget: formValues.budget,
+        meal_preference: formValues.meal_preference,
+        interests: formValues.interests?.join(', '),
+        user_id: userInfo?.id
+      });
+
       onSubmit();
       console.log("Form Values Submitted:", formValues);
     } catch (validationError: any) {

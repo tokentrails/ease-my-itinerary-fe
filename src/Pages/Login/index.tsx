@@ -15,6 +15,7 @@ import { showToast } from "../../utils/toastHelper";
 import { useDispatch } from "react-redux";
 import { setUserInfo } from "../../Store/user-slice";
 import { useNavigate } from "react-router-dom";
+import { logEvent } from "../../firebase";
 interface FormValues {
   email: string;
   password: string;
@@ -98,6 +99,20 @@ const Login = () => {
             window.localStorage.setItem("userInfo",JSON.stringify(resp.data.user))
             window.localStorage.setItem("auth",resp.data.access_token)
             window.localStorage.setItem("refresh",resp.data.refresh_token)
+
+            // Log analytics event
+            if (isRegister) {
+              logEvent('sign_up', {
+                method: 'email',
+                user_id: resp.data.user.id
+              });
+            } else {
+              logEvent('login', {
+                method: 'email',
+                user_id: resp.data.user.id
+              });
+            }
+
             navigate("/");
           }
 

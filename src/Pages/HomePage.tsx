@@ -4,15 +4,26 @@ import type { iSliderItem } from "../utils/customeTypo";
 import { guideCities } from "../utils/constants";
 import SearchIcon from "@mui/icons-material/Search";
 import PlaceAutocompleteInput from "../customComponents/UseGoogleMapSearch";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import CustomeSlider from "../customComponents/customSliderNew";
 import ChatInterface from "../Components/ChatInterface";
 import ItinaryForm from "../Components/Form";
+import { logEvent } from "../firebase";
+
 const HomePage = () => {
   const navigate = useNavigate();
   const Cities: iSliderItem[] = guideCities;
   const [search, setSearch] = useState("");
+
+  useEffect(() => {
+    // Log page view when homepage loads
+    logEvent('page_view', {
+      page_title: 'Home Page',
+      page_location: window.location.href,
+      page_path: '/'
+    });
+  }, []);
 
   const Opendestination = (destination: string) => {
     navigate("/Destination" + "?destination=" + destination);

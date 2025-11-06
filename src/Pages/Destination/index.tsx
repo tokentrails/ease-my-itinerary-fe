@@ -20,6 +20,7 @@ import Loader from "../../Components/Itinerary/loader";
 import ItinaryForm from "../../Components/Form";
 import { updateFormField } from "../../Store/form-slice";
 import { UsetInfo } from "../../Store/user-slice";
+import { logEvent } from "../../firebase";
 
 const loadingMessages = [
   "Exploring hidden gems in the destination...",
@@ -96,6 +97,14 @@ export default function DestinationGuide() {
         console.log({ resp });
         if (resp.success) {
           setDestinationData(resp.data);
+
+          // Log analytics event for destination research
+          logEvent('research_destination', {
+            destination: resp.data.destination,
+            destination_name: location,
+            has_budget_data: !!(resp.data.suggestions?.budget_range),
+            has_attractions: !!(resp.data.attractions?.popular?.length > 0)
+          });
         }
       })
       .catch((err: any) => {

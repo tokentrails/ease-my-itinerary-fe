@@ -4,6 +4,7 @@ import './index.css'
 import { Provider } from 'react-redux'
 import {store} from "./Store/store.ts"
 import App from './App.tsx'
+import './firebase' // Initialize Firebase
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

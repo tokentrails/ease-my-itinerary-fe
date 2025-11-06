@@ -14,6 +14,7 @@ import {
   Users,
 } from 'lucide-react';
 import moment from 'moment';
+import { logEvent } from '../firebase';
 
 interface BookingConfirmationData {
   booking_id: string;
@@ -75,6 +76,17 @@ const BookingConfirmation: React.FC = () => {
       try {
         const data = JSON.parse(storedData);
         setBookingData(data);
+
+        // Log analytics event for successful booking
+        logEvent('purchase', {
+          transaction_id: data.booking_id,
+          value: data.cost_summary.total_amount,
+          currency: data.cost_summary.currency || 'INR',
+          trip_id: data.trip_id,
+          booking_status: data.booking_status,
+          payment_method: data.payment_summary?.payment_method,
+          travelers_count: data.travelers?.length || 0
+        });
       } catch (error) {
         console.error('Error parsing booking data:', error);
       }
